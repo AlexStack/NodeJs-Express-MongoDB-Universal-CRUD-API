@@ -5,9 +5,11 @@ const cors = require("cors");
 const resource = require("./app/routes/express-resource-alex");
 const app = express();
 
-console.log(process.env);
+
 
 const API_CONFIG = require("./app/config/api.config");
+
+console.log(process.env, API_CONFIG);
 
 var corsOptions = {
     origin: API_CONFIG.CORS_ORIGIN,
@@ -30,13 +32,14 @@ const db = require("./app/models");
 db.mongoose
     .connect(API_CONFIG.DB, {
         useNewUrlParser: true,
+        useCreateIndex: true,
         useUnifiedTopology: true,
     })
     .then(() => {
-        console.log("Connected to the database!");
+        console.log("Connected to the mongodb database!");
     })
     .catch((err) => {
-        console.log("Cannot connect to the database!", err);
+        console.log("Cannot connect to the mongodb database!", err);
         process.exit();
     });
 
