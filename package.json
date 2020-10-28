@@ -17,5 +17,6 @@
     "mongoose": "^5.10.8",
     "nodemon": "^2.0.6",
     "serverless-http": "^2.6.0"
-  }
+  },
+  "engines":{ "node": "12.x" }
 }

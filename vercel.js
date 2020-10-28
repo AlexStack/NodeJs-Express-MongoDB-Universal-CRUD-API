@@ -9,7 +9,7 @@ const app = express();
 
 const API_CONFIG = require("./app/config/api.config");
 
-console.log(process.env, API_CONFIG);
+// console.log(process.env, API_CONFIG);
 
 var corsOptions = {
     origin: API_CONFIG.CORS_ORIGIN,
@@ -37,6 +37,7 @@ db.mongoose
     })
     .then(() => {
         console.log("Connected to the mongodb database!");
+        console.log(process.env, API_CONFIG);
     })
     .catch((err) => {
         console.log("Cannot connect to the mongodb database!", err);
@@ -54,4 +55,4 @@ API_CONFIG.API_SCHEMAS.forEach(apiSchema => {
 
 
 
-module.exports.lambdaHandler = serverless(app);
+module.exports = serverless(app);
