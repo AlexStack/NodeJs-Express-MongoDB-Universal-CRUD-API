@@ -1,0 +1,5 @@
+vendor
+node_modules
+node_lambda_layer
+.serverless
+.env
