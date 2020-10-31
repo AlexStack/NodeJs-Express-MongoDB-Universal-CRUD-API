@@ -55,56 +55,83 @@ exports.index = (req, res) => {
   let condition = {};
   let tempVar;
   for (paramName in req.query) {
+    let paramValue = req.query[paramName];
+
+    // Add _like to filter %keyword%, e.g. name_like=ca
+    if (paramName.indexOf('_like') != -1) {
+      paramName = paramName.replace('_like', '');
+      paramValue = '%' + paramValue + '%';
+    }
+
+    // Add _gte or _lte for getting a range(cannot use together yet)
+    // , e.g. age_lte=60  age_gte=18
+    if (paramName.indexOf('_gte') != -1) {
+      paramName = paramName.replace('_gte', '');
+      paramValue = '>' + paramValue;
+    }
+    if (paramName.indexOf('_lte') != -1) {
+      paramName = paramName.replace('_lte', '');
+      paramValue = '<' + paramValue;
+    }
+
     if (paramName in apiSchema.schema) {
       if (apiSchema.schema[paramName] == String || ("type" in apiSchema.schema[paramName] && apiSchema.schema[paramName].type == String)) {
-        if (req.query[paramName].indexOf('==') === 0) {
+        if (paramValue.indexOf('==') === 0) {
           // e.g. title===Cat 
           // case sensitive equal match, better to set up index
-          condition[paramName] = req.query[paramName].replace('==', '');
-        } else if (req.query[paramName].substr(0, 1) == '%' && req.query[paramName].substr(-1) == '%') {
+          condition[paramName] = paramValue.replace('==', '');
+        } else if (paramValue.substr(0, 1) == '%' && paramValue.substr(-1) == '%') {
           // e.g. title=%ca%
           // case insensitive full text match, will not use index, slow
-          condition[paramName] = { $regex: new RegExp(req.query[paramName].replace(/%/g, '')), $options: "i" };
+          condition[paramName] = { $regex: new RegExp(paramValue.replace(/%/g, '')), $options: "i" };
         } else {
           // e.g. title=cat
           // case insensitive equal match, may not use the index
           // https://docs.mongodb.com/manual/reference/operator/query/regex/
-          condition[paramName] = { $regex: new RegExp("^" + req.query[paramName].toLowerCase() + "$", "i") };
+          condition[paramName] = { $regex: new RegExp("^" + paramValue.toLowerCase() + "$", "i") };
         }
 
       } else if (apiSchema.schema[paramName] == Number || ("type" in apiSchema.schema[paramName] && apiSchema.schema[paramName].type == Number)) {
-        if (req.query[paramName].indexOf('>') === 0) {
+        if (paramValue.indexOf('>') === 0) {
           // e.g. age=>18
-          tempVar = Number(req.query[paramName].replace('>', ''));
+          tempVar = Number(paramValue.replace('>', ''));
           if (!isNaN(tempVar)) {
             condition[paramName] = { $gte: tempVar };
           }
-        } else if (req.query[paramName].indexOf('<') === 0) {
+        } else if (paramValue.indexOf('<') === 0) {
           // e.g. age=<18
-          tempVar = Number(req.query[paramName].replace('<', ''));
+          tempVar = Number(paramValue.replace('<', ''));
           if (!isNaN(tempVar)) {
             condition[paramName] = { $lte: tempVar };
           }
-        } else if (!isNaN(req.query[paramName])) {
+        } else if (!isNaN(paramValue)) {
           // e.g. age=18
-          condition[paramName] = { $eq: req.query[paramName] };
+          condition[paramName] = { $eq: paramValue };
         }
       }
     }
-    // console.log(paramName, req.query[paramName])
+    // console.log(paramName, paramValue)
+  }
+
+  // find multiple ids, e.g.  ?id=1&id=2&id=3 or ?id=1,2,3,4,5
+  if (req.query.id) {
+    const idAry = (typeof req.query.id == 'string') ? req.query.id.split(',') : req.query.id;
+    condition["id"] = { "$in": idAry };
   }
   console.log('find query condition:', condition);
 
+  // Add _sort and _order (ascending order by default)
   let defaultSort = {};
   if (req.query._sort && req.query._order) {
     if (req.query._sort in apiSchema.schema) {
-      defaultSort[req.query._sort] = (req.query._order == 'ASC') ? 1 : -1;
+      defaultSort[req.query._sort] = (req.query._order == 'DESC') ? -1 : 1;
     }
   }
   if (Object.keys(defaultSort).length === 0) {
-    defaultSort = { id: 1 };
+    defaultSort = { id: -1 };
   }
 
+  // Add _start and _end or _limit 
   let defaultSkip = 0;
   let defaultLimit = 0;
   if (req.query._start && req.query._end) {
@@ -122,13 +149,13 @@ exports.index = (req, res) => {
     query.limit(defaultLimit);
   }
   query.then(async (data) => {
-      const totalNumber = await Universal.countDocuments(condition);
-      console.log('defaultSort', defaultSort, totalNumber);
-      // const totalNumber = data.length;
-      res.set("Access-Control-Expose-Headers", "X-Total-Count");
-      res.set("x-total-count", totalNumber);
-      res.send(data);
-    })
+    const totalNumber = await Universal.countDocuments(condition);
+    console.log('defaultSort', defaultSort, totalNumber);
+    // const totalNumber = data.length;
+    res.set("Access-Control-Expose-Headers", "X-Total-Count");
+    res.set("x-total-count", totalNumber);
+    res.send(data);
+  })
     .catch((err) => {
       res.status(500).send({
         message:
