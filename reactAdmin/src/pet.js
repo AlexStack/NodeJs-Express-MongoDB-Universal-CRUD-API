@@ -20,7 +20,7 @@ const PetGenders = [
 
 const SearchFilter = (props) => (
     <Filter {...props}>
-        <TextInput label="Search Name" source="name" alwaysOn />
+        <TextInput label="Search Name" source="name_like" alwaysOn />
         {/* <TextInput label="Search Species" source="species" /> */}
         <SelectInput source="species" choices={PetSpecies} />
         <SelectInput source="gender" choices={PetGenders} />

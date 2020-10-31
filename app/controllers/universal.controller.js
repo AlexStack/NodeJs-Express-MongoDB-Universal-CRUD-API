@@ -58,6 +58,8 @@ exports.index = (req, res) => {
     let paramValue = req.query[paramName];
 
     // Add _like to filter %keyword%, e.g. name_like=ca
+    // support simple regex syntax
+    // e.g.name_like=^v  name_like=n$ name_like=jack|alex  name_like=or?n
     if (paramName.indexOf('_like') != -1) {
       paramName = paramName.replace('_like', '');
       paramValue = '%' + paramValue + '%';
@@ -225,7 +227,9 @@ exports.update = (req, res) => {
 
 // Delete a Universal with the specified id in the request
 exports.destroy = (req, res) => {
-  const id = req.params[API_CONFIG.API_ROUTE];
+  const apiSchema = getApiSchema(req, res);
+  // console.log(apiSchema, req.params);
+  const id = req.params[apiSchema.apiRoute];
   const Universal = getUniversalDb(req, res);
   Universal.findByIdAndRemove(id)
     .then((data) => {
@@ -258,7 +262,7 @@ exports.search = (req, res) => {
     {
       $search: {
         text: {
-          query: keyword,
+          query: keyword.trim(),
           path: apiSchema.searchFields,
         },
       },
