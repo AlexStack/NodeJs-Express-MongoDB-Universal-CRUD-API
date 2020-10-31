@@ -28,7 +28,7 @@ const EditTitle = ({ record }) => {
 
 export const UserEdit = props => (
     <Edit title={<EditTitle />} {...props}>
-        <SimpleForm>
+        <SimpleForm redirect="list">
             <TextInput source="name" />
             <TextInput source="email" />
             <NumberInput source="age" />
@@ -42,7 +42,7 @@ export const UserEdit = props => (
 
 export const UserCreate = props => (
     <Create {...props}>
-        <SimpleForm>
+        <SimpleForm redirect="list">
             <TextInput source="name" />
             <TextInput source="email" />
             <NumberInput source="age" />

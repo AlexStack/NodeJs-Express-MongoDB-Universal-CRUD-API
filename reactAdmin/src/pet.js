@@ -49,7 +49,7 @@ export const PetList = props => (
 
 export const PetCreate = props => (
     <Create {...props}>
-        <SimpleForm>
+        <SimpleForm redirect="list">
             <TextInput source="name" />
             <SelectInput source="species" choices={PetSpecies} />
             <NumberInput source="age" />
@@ -72,7 +72,7 @@ const EditTitle = ({ record }) => {
 
 export const PetEdit = props => (
     <Edit title={<EditTitle />} {...props}>
-        <SimpleForm>
+        <SimpleForm redirect="list">
             <TextInput source="name" />
             <SelectInput source="species" choices={PetSpecies} />
             <NumberInput source="age" />

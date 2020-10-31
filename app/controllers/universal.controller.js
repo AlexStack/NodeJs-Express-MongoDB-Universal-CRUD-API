@@ -215,7 +215,12 @@ exports.update = (req, res) => {
         // console.log("the item was not found! Create a new one!");
         // create(req, res);
       } else {
-        res.send({ message: "Item was updated successfully." });
+        // res.send({
+        //   message: "Item was updated successfully.",
+        //   data: data,
+        //   total: 1
+        // });
+        res.send(data);
       }
     })
     .catch((err) => {

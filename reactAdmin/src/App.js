@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Admin, Resource, EditGuesser, CreateGuesser } from 'react-admin';
+import { Admin, Resource } from 'react-admin';
 import { UserList, UserEdit, UserCreate } from './user';
 import jsonServerProvider from 'ra-data-json-server';
 import PostIcon from '@material-ui/icons/Book';
