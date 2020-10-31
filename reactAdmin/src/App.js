@@ -7,9 +7,9 @@ import UserIcon from '@material-ui/icons/Group';
 import { PetList, PetEdit, PetCreate } from "./pet";
 import { StoryList, StoryEdit, StoryCreate } from "./story";
 
-const dataProvider = jsonServerProvider('http://localhost:8080/api');
+// const dataProvider = jsonServerProvider('http://localhost:8080/api');
 
-// const dataProvider = jsonServerProvider('https://jsonplaceholder.typicode.com');
+const dataProvider = jsonServerProvider(process.env.MEAN_API || 'https://meanapi.netlify.app/.netlify/functions/serverlessapi');
 
 const App = () => (
   <Admin dataProvider={dataProvider} >
