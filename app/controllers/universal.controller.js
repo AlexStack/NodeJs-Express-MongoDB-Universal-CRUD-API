@@ -118,6 +118,12 @@ exports.index = (req, res) => {
     const idAry = (typeof req.query.id == 'string') ? req.query.id.split(',') : req.query.id;
     condition["id"] = { "$in": idAry };
   }
+
+  // full text search
+  if (req.query.q && req.query.q.trim() != '') {
+    return this.search(req, res);
+  }
+
   console.log('find query condition:', condition);
 
   // Add _sort and _order (ascending order by default)
@@ -241,9 +247,9 @@ exports.destroy = (req, res) => {
 };
 
 
-// search
+// full text search
 exports.search = (req, res) => {
-  const keyword = req.params.keyword;
+  const keyword = req.params.keyword ? req.params.keyword : req.query.q;
   const Universal = getUniversalDb(req, res);
   //   Universal.find({ $text: { $search: keyword } })
   const apiSchema = getApiSchema(req, res);
