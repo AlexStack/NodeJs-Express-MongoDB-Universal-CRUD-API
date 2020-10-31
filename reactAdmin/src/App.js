@@ -15,7 +15,7 @@ const App = () => (
   <Admin dataProvider={dataProvider} >
     <Resource name="user" list={UserList} edit={UserEdit} create={UserCreate} icon={UserIcon} />
     <Resource name="pet" list={PetList} edit={PetEdit} create={PetCreate} icon={PostIcon} />
-    <Resource name="story" list={StoryList} edit={StoryEdit} create={StoryCreate} />
+    <Resource name="story" list={StoryList} edit={StoryEdit} create={StoryCreate} dataProvider={dataProvider} />
   </Admin >
 );
 export default App;
