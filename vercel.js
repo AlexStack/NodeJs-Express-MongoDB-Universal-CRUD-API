@@ -55,4 +55,7 @@ API_CONFIG.API_SCHEMAS.forEach(apiSchema => {
 
 
 
-module.exports = serverless(app);
+// module.exports = serverless(app);
+app.listen(API_CONFIG.PORT, () => {
+    console.log(`Server is running on port ${API_CONFIG.PORT}.`);
+});

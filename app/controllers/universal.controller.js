@@ -97,6 +97,9 @@ exports.index = (req, res) => {
 
   Universal.find(condition)
     .then((data) => {
+      const total = data.length;
+      res.set("Access-Control-Expose-Headers", "X-Total-Count");
+      res.set("x-total-count", total);
       res.send(data);
     })
     .catch((err) => {
