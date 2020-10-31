@@ -48,7 +48,7 @@ exports.index = (req, res) => {
   // Universal = db[req.url.replace('/' + API_CONFIG.API_BASE, '')];
   const Universal = getUniversalDb(req, res);
 
-  // console.log('query', req.query)
+  console.log('query', req.query)
   const apiSchema = getApiSchema(req, res);
   // console.log('apiSchema=', apiSchema);
 
@@ -93,13 +93,40 @@ exports.index = (req, res) => {
     }
     // console.log(paramName, req.query[paramName])
   }
-  console.log('find query condition:', condition)
+  console.log('find query condition:', condition);
 
-  Universal.find(condition)
-    .then((data) => {
-      const total = data.length;
+  let defaultSort = {};
+  if (req.query._sort && req.query._order) {
+    if (req.query._sort in apiSchema.schema) {
+      defaultSort[req.query._sort] = (req.query._order == 'ASC') ? 1 : -1;
+    }
+  }
+  if (Object.keys(defaultSort).length === 0) {
+    defaultSort = { id: 1 };
+  }
+
+  let defaultSkip = 0;
+  let defaultLimit = 0;
+  if (req.query._start && req.query._end) {
+    defaultSkip = parseInt(req.query._start);
+    defaultLimit = req.query._limit ? parseInt(req.query._limit) : (parseInt(req.query._end) - parseInt(req.query._start));
+  }
+
+
+  let query = Universal.find(condition).sort(defaultSort);
+
+  if (defaultSkip > 0) {
+    query.skip(defaultSkip);
+  }
+  if (defaultLimit > 0) {
+    query.limit(defaultLimit);
+  }
+  query.then(async (data) => {
+      const totalNumber = await Universal.countDocuments(condition);
+      console.log('defaultSort', defaultSort, totalNumber);
+      // const totalNumber = data.length;
       res.set("Access-Control-Expose-Headers", "X-Total-Count");
-      res.set("x-total-count", total);
+      res.set("x-total-count", totalNumber);
       res.send(data);
     })
     .catch((err) => {
