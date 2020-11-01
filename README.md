@@ -22,9 +22,19 @@
   API_BASE: .netlify/functions/serverlessapi/
   DB: mongodb+srv://db-user:db-pass@cluster0.tblrm.mongodb.net/db-name?retryWrites=true&w=majority
   DEBUG: yes
-  MEAN_API: https://meanapi.netlify.app/.netlify/functions/serverlessapi
+  REACT_APP_MEAN_API: https://meanapi.netlify.app/.netlify/functions/serverlessapi
+- Config react-admin for API demo or admin dashboard
+  - Setup env available: MEAN_API to https://meanapi.netlify.app/.netlify/functions/serverlessapi
+  - Change document root directory to reactAdmin/build
 
-## Config react-admin for API demo or admin dashboard
+## Vercel
 
-- Setup env available: MEAN_API to https://meanapi.netlify.app/.netlify/functions/serverlessapi
-- Change document root directory to reactAdmin/build
+- Test many times for serverless function and failed
+- Use vercel.json install of serverless function
+- Demo: https://meanapi.now.sh/serverlessApi/pet
+- Environment variables
+  API_BASE: serverlessApi/
+  DB: mongodb+srv://db-user:db-pass@cluster0.tblrm.mongodb.net/db-name?retryWrites=true&w=majority
+  DEBUG: yes
+- Set up react-admin with another app use different domain name
+  - REACT_APP_MEAN_API: https://meanapi.now.sh/serverlessApi
