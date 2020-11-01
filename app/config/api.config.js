@@ -1,7 +1,7 @@
 module.exports.DB = process.env.DB || 'please-set-database-connect-uri-first';
 module.exports.API_BASE = process.env.API_BASE || 'api/';
 module.exports.PORT = process.env.PORT || '8080';
-module.exports.CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:3000';
+module.exports.CORS_ORIGIN = process.env.CORS_ORIGIN || [/localhost/, /\.test$/];
 
 module.exports.API_SCHEMAS = [
     {

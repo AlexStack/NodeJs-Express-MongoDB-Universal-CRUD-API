@@ -13,9 +13,18 @@ if (process.env.DEBUG == 'yes') {
     console.log(process.env, API_CONFIG);
 }
 
-var corsOptions = {
+
+let corsOptions = {
     origin: API_CONFIG.CORS_ORIGIN,
 };
+
+if (typeof API_CONFIG.CORS_ORIGIN == 'string' && API_CONFIG.CORS_ORIGIN.startsWith('[')) {
+    const corsStr = API_CONFIG.CORS_ORIGIN.replace('[', '').replace(']', '').replace(/ /g, '');
+    const corsAry = corsStr.split(',');
+    corsOptions.origin = corsAry;
+}
+
+console.log(corsOptions);
 
 app.use(cors(corsOptions));
 

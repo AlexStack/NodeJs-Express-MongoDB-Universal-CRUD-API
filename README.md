@@ -33,8 +33,10 @@
 - Use vercel.json install of serverless function
 - Demo: https://meanapi.now.sh/serverlessApi/pet
 - Environment variables
-  API_BASE: serverlessApi/
-  DB: mongodb+srv://db-user:db-pass@cluster0.tblrm.mongodb.net/db-name?retryWrites=true&w=majority
-  DEBUG: yes
+  - API_BASE: serverlessApi/
+  - DB: mongodb+srv://db-user:db-pass@cluster0.tblrm.mongodb.net/db-name?retryWrites=true&w=majority
+  - DEBUG: yes
+  - CORS_ORIGIN: https://reactadmindemo.now.sh
 - Set up react-admin with another app use different domain name
   - REACT_APP_MEAN_API: https://meanapi.now.sh/serverlessApi
+  - Demo: https://reactadmindemo.now.sh/

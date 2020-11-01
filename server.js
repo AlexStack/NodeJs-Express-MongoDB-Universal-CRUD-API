@@ -7,17 +7,26 @@ const API_CONFIG = require("./app/config/api.config");
 const app = express();
 
 const isRunningOnLambda = !!(process.env.LAMBDA_TASK_ROOT || process.env.AWS_LAMBDA_FUNCTION_NAME);
-console.log(isRunningOnLambda,isRunningOnLambda);
+console.log(isRunningOnLambda, isRunningOnLambda);
 
 if (envResult.error) {
-    throw envResult.error
+  throw envResult.error
 } else {
-    // console.log(envResult.parsed);
+  // console.log(envResult.parsed);
 }
 
-var corsOptions = {
+
+let corsOptions = {
   origin: API_CONFIG.CORS_ORIGIN,
 };
+
+if (typeof API_CONFIG.CORS_ORIGIN == 'string' && API_CONFIG.CORS_ORIGIN.startsWith('[')) {
+  const corsStr = API_CONFIG.CORS_ORIGIN.replace('[', '').replace(']', '').replace(/ /g, '');
+  const corsAry = corsStr.split(',');
+  corsOptions.origin = corsAry;
+}
+
+console.log(corsOptions);
 
 app.use(cors(corsOptions));
 
@@ -28,7 +37,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // simple route for api index page
-app.get("/"+API_CONFIG.API_BASE, (req, res) => {
+app.get("/" + API_CONFIG.API_BASE, (req, res) => {
   res.json({ message: "Welcome to Alex' Universal API(Node Express Mongodb) application" });
 });
 
@@ -46,13 +55,13 @@ db.mongoose
     process.exit();
   });
 
-let universal = null; 
+let universal = null;
 API_CONFIG.API_SCHEMAS.forEach(apiSchema => {
   universal = require("./app/controllers/universal.controller");
   app.resource(API_CONFIG.API_BASE + apiSchema.apiRoute, universal);
-  app.get("/"+API_CONFIG.API_BASE + apiSchema.apiRoute + "/search/:keyword", (req, res, next) => {
+  app.get("/" + API_CONFIG.API_BASE + apiSchema.apiRoute + "/search/:keyword", (req, res, next) => {
     universal.search(req, res);
-  });  
+  });
 });
 
 

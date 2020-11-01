@@ -9,7 +9,7 @@ import { StoryList, StoryEdit, StoryCreate } from "./story";
 
 // const dataProvider = jsonServerProvider('http://localhost:8080/api');
 
-const dataProvider = jsonServerProvider(process.env.REACT_APP_MEAN_API || 'https://meanapi.netlify.app/.netlify/functions/serverlessapi');
+const dataProvider = jsonServerProvider(process.env.REACT_APP_MEAN_API || 'http://localhost:8080/api');
 
 const App = () => (
   <Admin dataProvider={dataProvider} >
