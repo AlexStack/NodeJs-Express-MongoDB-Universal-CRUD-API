@@ -2,12 +2,12 @@ const serverless = require("serverless-http");
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const resource = require("../app/routes/express-resource-alex");
+const resource = require("./app/routes/express-resource-alex");
 const app = express();
 
 
 
-const API_CONFIG = require("../app/config/api.config");
+const API_CONFIG = require("./app/config/api.config");
 
 if (process.env.DEBUG == 'yes') {
     console.log(process.env, API_CONFIG);
@@ -30,7 +30,7 @@ app.get("/" + API_CONFIG.API_BASE, (req, res) => {
     res.json({ message: "Welcome to Alex' Universal API(Node Express Mongodb) application" });
 });
 
-const db = require("../app/models");
+const db = require("./app/models");
 db.mongoose
     .connect(API_CONFIG.DB, {
         useNewUrlParser: true,
@@ -48,7 +48,7 @@ db.mongoose
 
 let universal = null;
 API_CONFIG.API_SCHEMAS.forEach(apiSchema => {
-    universal = require("../app/controllers/universal.controller");
+    universal = require("./app/controllers/universal.controller");
     app.resource(API_CONFIG.API_BASE + apiSchema.apiRoute, universal);
     app.get("/" + API_CONFIG.API_BASE + apiSchema.apiRoute + "/search/:keyword", (req, res, next) => {
         universal.search(req, res);
@@ -57,7 +57,7 @@ API_CONFIG.API_SCHEMAS.forEach(apiSchema => {
 
 
 
-module.exports = serverless(app);
-// app.listen(API_CONFIG.PORT, () => {
-//     console.log(`Server is running on port ${API_CONFIG.PORT}.`);
-// });
+// module.exports = serverless(app);
+app.listen(API_CONFIG.PORT, () => {
+    console.log(`Server is running on port ${API_CONFIG.PORT}.`);
+});
