@@ -3,8 +3,7 @@
     "functions": {
         "./vercel.js": {
         "memory": 512,
-        "maxDuration": 10,
-        "runtime": "vercel-node@12"
+        "maxDuration": 10
         }
     },
     "routes": [
