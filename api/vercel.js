@@ -9,7 +9,9 @@ const app = express();
 
 const API_CONFIG = require("./app/config/api.config");
 
-// console.log(process.env, API_CONFIG);
+if (process.env.DEBUG == 'yes') {
+    console.log(process.env, API_CONFIG);
+}
 
 var corsOptions = {
     origin: API_CONFIG.CORS_ORIGIN,

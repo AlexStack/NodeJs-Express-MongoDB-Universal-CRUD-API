@@ -16,7 +16,9 @@ if (!isRunningOnLambda) {
     }
 }
 
-// console.log(process.env);
+if (process.env.DEBUG == 'yes') {
+    console.log(process.env, API_CONFIG);
+}
 
 const API_CONFIG = require("./app/config/api.config");
 
@@ -61,10 +63,10 @@ API_CONFIG.API_SCHEMAS.forEach(apiSchema => {
 });
 
 
-if ( isRunningOnLambda ) {
+if (isRunningOnLambda) {
     module.exports.lambdaHandler = serverless(app);
 } else {
     app.listen(API_CONFIG.PORT, () => {
-    console.log(`API is running on port ${API_CONFIG.PORT}.`);
+        console.log(`API is running on port ${API_CONFIG.PORT}.`);
     });
 }
