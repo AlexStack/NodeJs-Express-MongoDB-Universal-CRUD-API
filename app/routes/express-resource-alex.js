@@ -9,7 +9,7 @@
  * Alex changes:
  * 1. Fixing deprecated app.del: Use app.delete
  * 2. change 'new' to 'create', 'create' to 'store'
- *
+ * 3. remove singularize for route parameter
  */
 
 /**
@@ -116,7 +116,8 @@ Resource.prototype.load = function (fn) {
  */
 
 Resource.prototype.__defineGetter__("defaultId", function () {
-  return this.name ? en.singularize(this.name.split("/").pop()) : "id";
+  // return this.name ? en.singularize(this.name.split("/").pop()) : "id";
+  return this.name ? this.name.split("/").pop() : "id";
 });
 
 /**

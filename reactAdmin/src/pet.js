@@ -24,7 +24,7 @@ const SearchFilter = (props) => (
         {/* <TextInput label="Search Species" source="species" /> */}
         <SelectInput source="species" choices={PetSpecies} />
         <SelectInput source="gender" choices={PetGenders} />
-        <ReferenceInput label="User" source="userId" reference="user" allowEmpty>
+        <ReferenceInput label="User" source="userId" reference="users" allowEmpty>
             <SelectInput optionText="name" />
         </ReferenceInput>
     </Filter>
@@ -38,7 +38,7 @@ export const PetList = props => (
             <TextField source="age" />
             <SelectField source="gender" choices={PetGenders} />
             <TextField source="priority" />
-            <ReferenceField source="userId" reference="user">
+            <ReferenceField source="userId" reference="users">
                 <TextField source="name" />
             </ReferenceField>
             <EditButton />
@@ -57,7 +57,7 @@ export const PetCreate = props => (
             <RadioButtonGroupInput source="gender" choices={PetGenders} optionText="name" optionValue="id" />
             <TextInput multiline source="detail" />
             <NumberInput source="priority" />
-            <ReferenceInput source="userId" reference="user">
+            <ReferenceInput source="userId" reference="users">
                 <SelectInput optionText="name" />
             </ReferenceInput>
             <DateInput source="updatedAt" />
@@ -80,7 +80,7 @@ export const PetEdit = props => (
             <NumberInput source="priority" />
             <TextInput disabled source="id" />
             <TextInput multiline source="detail" />
-            <ReferenceInput source="userId" reference="user">
+            <ReferenceInput source="userId" reference="users">
                 <SelectInput optionText="name" />
             </ReferenceInput>
             <DateInput source="updatedAt" />

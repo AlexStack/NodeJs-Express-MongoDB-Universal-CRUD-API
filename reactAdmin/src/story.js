@@ -11,10 +11,10 @@ export const StoryList = props => (
             <TextField source="title" />
             <SelectField source="public" choices={PublicOrPrivate} />
             <TextField source="priority" />
-            <ReferenceField source="petId" reference="pet">
+            <ReferenceField source="petId" reference="pets">
                 <TextField source="name" />
             </ReferenceField>
-            <ReferenceField source="userId" reference="user">
+            <ReferenceField source="userId" reference="users">
                 <TextField source="name" />
             </ReferenceField>
             <EditButton />
@@ -28,7 +28,7 @@ export const StoryCreate = props => {
     const transform = async data => {
         let pet;
         await dataProvider
-            .getOne('pet', { id: data.petId })
+            .getOne('pets', { id: data.petId })
             .then(response => {
                 pet = response.data;
             });
@@ -46,10 +46,10 @@ export const StoryCreate = props => {
                 <RadioButtonGroupInput source="public" choices={PublicOrPrivate} optionText="name" optionValue="id" />
                 <TextInput multiline source="content" />
                 <NumberInput source="priority" />
-                <ReferenceInput source="petId" reference="pet">
+                <ReferenceInput source="petId" reference="pets">
                     <SelectInput optionText="name" />
                 </ReferenceInput>
-                {/* <ReferenceInput source="userId" reference="user">
+                {/* <ReferenceInput source="userId" reference="users">
                 <SelectInput optionText="name" />
             </ReferenceInput> */}
                 <DateInput source="updatedAt" />
@@ -69,7 +69,7 @@ export const StoryEdit = (props) => {
     const transform = async data => {
         let pet;
         await dataProvider
-            .getOne('pet', { id: data.petId })
+            .getOne('pets', { id: data.petId })
             .then(response => {
                 pet = response.data;
             });
@@ -88,10 +88,10 @@ export const StoryEdit = (props) => {
                 <BooleanInput source="public" />
                 <TextInput multiline source="content" />
                 <NumberInput source="priority" />
-                <ReferenceInput source="petId" reference="pet">
+                <ReferenceInput source="petId" reference="pets">
                     <SelectInput optionText="name" />
                 </ReferenceInput>
-                {/* <ReferenceInput source="userId" reference="user">
+                {/* <ReferenceInput source="userId" reference="users">
                     <SelectInput optionText="name" />
                 </ReferenceInput> */}
                 <DateInput source="updatedAt" />
