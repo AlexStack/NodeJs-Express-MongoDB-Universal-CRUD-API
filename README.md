@@ -7,6 +7,13 @@
 - Come with a react-admin demo
 - Support field search(=, %like%, full-text) and some json-sever standard parameters: \_sort, \_order, \_start, \_end, \_limit, \_like, \_gte, \_lte, id=1,2,3,4,5
 
+## Debug locally
+
+- cd universalApi
+- nodemon awsLambda.js
+- cd reactAdmin
+- npm start
+
 ## AWS Lambda settings
 
 - Function js file: awsLambda.js

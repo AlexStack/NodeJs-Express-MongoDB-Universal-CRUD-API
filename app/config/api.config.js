@@ -3,6 +3,22 @@ module.exports.API_BASE = process.env.API_BASE || 'api/';
 module.exports.PORT = process.env.PORT || '8080';
 module.exports.CORS_ORIGIN = process.env.CORS_ORIGIN || [/localhost/, /\.test$/];
 
+/**
+ * 
+ * MongoDB collection name: plural camelCase, e.g. pets, stories, users, user_story, pet_story
+ * MongoDB field/column name: singular camelCase (keep same as javascript variable convention)
+ * 
+ * API Route: plural camelCase
+ * Use plural route name convention instead of singular
+ * Note: controller file name still use singular
+ * Ref: https://github.com/alexeymezenin/laravel-best-practices#follow-laravel-naming-conventions
+ * Ref: https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-1-basic-coding-standard.md
+ * Ref: https://www.php-fig.org/psr/psr-2/
+ * Ref: https://www.restapitutorial.com/lessons/restfulresourcenaming.html
+ * 
+ */
+
+
 module.exports.API_SCHEMAS = [
     {
         "apiRoute": "server4",
@@ -48,7 +64,7 @@ module.exports.API_SCHEMAS = [
         "searchFields": ["address"],
     },
     {
-        "apiRoute": "user",
+        "apiRoute": "users",
         "collectionName": "users",
         "schema": {
             name: String,
@@ -60,7 +76,7 @@ module.exports.API_SCHEMAS = [
         "searchFields": ["name"],
     },
     {
-        "apiRoute": "pet",
+        "apiRoute": "pets",
         "collectionName": "pets",
         "schema": {
             name: String,
@@ -75,7 +91,7 @@ module.exports.API_SCHEMAS = [
         "searchFields": ["name", "description"],
     },
     {
-        "apiRoute": "story",
+        "apiRoute": "stories",
         "collectionName": "stories",
         "schema": {
             title: String,
@@ -90,7 +106,7 @@ module.exports.API_SCHEMAS = [
         "searchFields": ["title", "content", "tags"],
     },
     {
-        "apiRoute": "file",
+        "apiRoute": "files",
         "collectionName": "files",
         "schema": {
             title: String,
