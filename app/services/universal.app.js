@@ -74,5 +74,8 @@ API_CONFIG.API_SCHEMAS.forEach(apiSchema => {
 
 app.set('config', API_CONFIG);
 
+module.exports.db = db;
 module.exports.app = app;
+module.exports.serverless = serverless;
 module.exports.API_CONFIG = API_CONFIG;
+
