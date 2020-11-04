@@ -1,4 +1,4 @@
-const { app, serverless, API_CONFIG } = require("./app/services/universal.app");
+const { app, serverless, API_CONFIG } = require("./app/express/universal.app");
 
 if (API_CONFIG.IS_SERVERLESS) {
     module.exports.lambdaHandler = serverless(app);

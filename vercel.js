@@ -1,4 +1,4 @@
-const { app, API_CONFIG } = require("./app/services/universal.app");
+const { app, API_CONFIG } = require("./app/express/universal.app");
 
 // module.exports = serverless(app);
 app.listen(API_CONFIG.PORT, () => {
