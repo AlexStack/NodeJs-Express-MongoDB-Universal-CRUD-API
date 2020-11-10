@@ -5,7 +5,20 @@ const cors = require("cors");
 const resource = require("../routes/express-resource-alex");
 const app = express();
 const db = require("../models");
-const API_CONFIG = require("../config/api.config");
+const fs = require("fs");
+
+// read config file from the app
+const configFilePaths = ['/config/meanapi.config.js', '/config/api.config.js', '/meanapi.config.js', '/api.config.js'];
+let apiConfigFile = '../config/api.config.js';
+const appRootDir = process.cwd();
+for (i = 0; i < 10; i++) {
+    if (fs.existsSync(appRootDir + configFilePaths[i])) {
+        apiConfigFile = appRootDir + configFilePaths[i];
+        break;
+    }
+}
+console.log('apiConfigFile=' + apiConfigFile);
+const API_CONFIG = require(apiConfigFile);
 
 if (process.env.DEBUG == 'yes') {
     console.log('API_CONFIG:', API_CONFIG);
