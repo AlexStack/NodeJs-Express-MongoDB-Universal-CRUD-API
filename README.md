@@ -9,16 +9,27 @@
 
 ## How to install
 
-- npm i universal-mean-api
+- npm install universal-mean-api
 
 ## How to use
 
-- Basic example of server.js or awsLambda.js:
+- You need create 2 js files after install: server.js & meanapi.config.js
+- Then run command: node server.js to see the result
+- Your app file structure example:
+
+```JavaScript
+  /node_modules
+  /package-lock.json
+  /server.js
+  /meanapi.config.js or /config/meanapi.config.js or /config/api.config.js
+```
+
+- Basic example code for server.js:
 
 ```JavaScript
 const { app, serverless, API_CONFIG } = require("universal-mean-api");
 if (API_CONFIG.IS_SERVERLESS) {
-    module.exports.lambdaHandler = serverless(app);
+    module.exports.lambdaHandler = serverless(app); // handler for serverless function
 } else {
     app.listen(app.get('config').PORT, () => {
         console.log(`API is running on port ${API_CONFIG.PORT}.`);
@@ -26,7 +37,7 @@ if (API_CONFIG.IS_SERVERLESS) {
 }
 ```
 
-- Basic example of api.config.js
+- Basic example of meanapi.config.js (API variables & MongoDB schemas & routes)
 
 ```JavaScript
 module.exports.DB = process.env.DB || 'please-set-database-connect-uri-first';
@@ -83,10 +94,41 @@ module.exports.API_SCHEMAS = [
 
 ```
 
+## How to access the RESTful API
+
+- Based on above example server.js & meanapi.config.js files, we can access the localhost:8080 by run command node server.js or nodemon server.js
+- RESTful API endpoint for collection < tablename >: http://localhost:8080/api/< tablename >
+- RESTful API endpoint for collection test1: http://localhost:8080/api/test1
+- RESTful API endpoint for collection test2: http://localhost:8080/api/test2
+- RESTful API endpoint for collection test3: http://localhost:8080/api/test3
+- RESTful API endpoint support GET/POST/PUT/DELETE and fields search
+
+## RESTful API CRUD routes example
+
+```JavaScript
+GET http://localhost:8080/api/test1
+GET http://localhost:8080/api/test1/<id>
+POST http://localhost:8080/api/test1
+PUT http://localhost:8080/api/test1/<id>
+PATCH http://localhost:8080/api/test1/<id>
+DELETE http://localhost:8080/api/test1/<id>
+```
+
+## Field search route examples
+
+- GET /api/test1?name_like=mean&description_like=api
+- GET /api/test1?age_lgt=18&\_limit=20
+- GET /api/test1?id=1&id=2&id=3
+- GET /api/test1?id=1,2,3,4
+
+## Sort & order by examples
+
+- GET /api/test1?\_sort=age&\_order=dasc&\_start=10&\_end=20&name_like=api
+
 ## Debug locally
 
-- cd universalApi
-- nodemon awsLambda.js
+- npm install universal-mean-api
+- nodemon server.js
 - cd reactAdmin
 - npm start
 

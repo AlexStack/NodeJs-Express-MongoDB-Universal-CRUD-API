@@ -1,6 +1,6 @@
 {
   "name": "universal-mean-api",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "NodeJs-Express-MongoDB-Universal-CRUD-API(Universal MEAN API) for dynamic MongoDB tables, no need to repeat the CRUD API code for every table. Focus on run it in a serverless environment.",
   "main": "./app/express/universal.app.js",
   "scripts": {
