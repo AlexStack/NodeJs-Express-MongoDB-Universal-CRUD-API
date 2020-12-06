@@ -119,7 +119,7 @@ DELETE http://localhost:8080/api/test1/<id>
 - GET /api/test1?name_like=mean&description_like=api
 - GET /api/test1?age_lgt=18&\_limit=20
 - GET /api/test1?id=1&id=2&id=3
-- GET /api/test1?id=1,2,3,4
+- GET /api/test1?id=1,2,3,4 or ?\_id=1,2,3,4
 
 ## Sort & order by examples
 

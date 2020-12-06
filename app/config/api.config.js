@@ -84,12 +84,25 @@ module.exports.API_SCHEMAS = [
         "collectionName": "users",
         "schema": {
             name: String,
-            email: String,
-            password: String,
+            email: {
+                type: String,
+                required: true,
+                select: true,
+            },
+            password: {
+                type: String,
+                required: true,
+                select: false,
+            },
+            confirmPassword: {
+                type: String,
+                select: false,
+            },
             role: String
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name"],
+        "selectFields": "-email -firebaseUid",
     },
     {
         "apiRoute": "pets",
