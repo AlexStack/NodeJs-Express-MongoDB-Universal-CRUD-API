@@ -1,4 +1,4 @@
-const API_CONFIG = require("../config/api.config");
+const API_CONFIG = require("../config/api.config-BAK");
 const db = require("../models");
 
 const getApiRoute = (req, res) => {
@@ -48,7 +48,7 @@ exports.index = (req, res) => {
   // Universal = db[req.url.replace('/' + API_CONFIG.API_BASE, '')];
   const Universal = getUniversalDb(req, res);
 
-  console.log('query', req.query)
+  console.log('===== query', req.query)
   const apiSchema = getApiSchema(req, res);
   // console.log('apiSchema=', apiSchema);
 
@@ -116,9 +116,10 @@ exports.index = (req, res) => {
   }
 
   // find multiple ids, e.g.  ?id=1&id=2&id=3 or ?id=1,2,3,4,5
-  if (req.query.id) {
-    const idAry = (typeof req.query.id == 'string') ? req.query.id.split(',') : req.query.id;
-    condition["id"] = { "$in": idAry };
+  if (req.query.id || req.query._id) {
+    const originId = req.query.id ? req.query.id : req.query._id;
+    const idAry = (typeof originId == 'string') ? originId.split(',') : originId;
+    condition["_id"] = { "$in": idAry };
   }
 
   // full text search
