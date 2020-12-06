@@ -128,7 +128,7 @@ DELETE http://localhost:8080/api/test1/<id>
 ## Debug locally
 
 - npm install universal-mean-api
-- nodemon server.js
+- npx nodemon server.js (or nodemon server.js)
 - cd reactAdmin
 - npm start
 
