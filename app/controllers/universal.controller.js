@@ -1,4 +1,4 @@
-const API_CONFIG = require("../config/api.config-BAK");
+const API_CONFIG = require("../config/api.config");
 const db = require("../models");
 
 const getApiRoute = (req, res) => {
@@ -137,7 +137,7 @@ exports.index = (req, res) => {
     }
   }
   if (Object.keys(defaultSort).length === 0) {
-    defaultSort = { id: -1 };
+    defaultSort = { _id: -1 };
   }
 
   // Add _start and _end or _limit 
@@ -150,6 +150,11 @@ exports.index = (req, res) => {
 
 
   let query = Universal.find(condition).sort(defaultSort);
+
+  // only display specific fields or exclude some fields
+  if (apiSchema.selectFields && apiSchema.selectFields.length > 0) {
+    query.select(apiSchema.selectFields);
+  }
 
   if (defaultSkip > 0) {
     query.skip(defaultSkip);
@@ -181,12 +186,18 @@ exports.show = (req, res) => {
   const id = req.params[apiSchema.apiRoute];
 
   const Universal = getUniversalDb(req, res);
-  Universal.findById(id)
-    .then((data) => {
-      if (!data)
-        res.status(404).send({ message: "Not found the item with id " + id });
-      else res.send(data);
-    })
+  let query = Universal.findById(id);
+
+  // only display specific fields or exclude some schema fields
+  if (apiSchema.selectFields && apiSchema.selectFields.length > 0) {
+    query.select(apiSchema.selectFields);
+  }
+
+  query.then((data) => {
+    if (!data)
+      res.status(404).send({ message: "Not found the item with id " + id });
+    else res.send(data);
+  })
     .catch((err) => {
       res.status(500).send({ message: "Error retrieving the item with id=" + id });
     });
