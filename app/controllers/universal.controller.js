@@ -169,17 +169,95 @@ exports.index = (req, res) => {
     res.set("Access-Control-Expose-Headers", "X-Total-Count");
     res.set("x-total-count", totalNumber);
     res.send(data);
-  })
-    .catch((err) => {
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while retrieving items.",
-      });
+  }).catch((err) => {
+    res.status(500).send({
+      message:
+        err.message || "Some error occurred while retrieving items.",
     });
+  });
 };
 
-// Find a single Universal with an id
-exports.show = (req, res) => {
+const getTableId = (tableName) => {
+  let tableId = tableName + 'Id';
+  if (tableName.slice(-3) == 'ies') {
+    tableId = tableName.slice(0, -3) + 'Id';
+  } else if (tableName.slice(-2) == 'es') {
+    tableId = tableName.slice(0, -2) + 'Id';
+  } else if (tableName.slice(-1) == 's') {
+    tableId = tableName.slice(0, -1) + 'Id';
+  }
+  return tableId;
+}
+
+const getPluralName = (tableName) => {
+  let pluralName = tableName + 's';
+  const lastLetter = tableName.slice(-1);
+  const last2Letter = tableName.slice(-2);
+  if (lastLetter == 's' || lastLetter == 'x' || lastLetter == 'z' || last2Letter == 'ch' || last2Letter == 'sh') {
+    pluralName = tableName + 'es';
+  } else if (lastLetter == 'y' && last2Letter != 'oy' && last2Letter != 'ey') {
+    pluralName = tableName.slice(0, -1) + 'ies';
+  } else if (lastLetter == 'f' && last2Letter != 'of' && last2Letter != 'ef') {
+    pluralName = tableName.slice(0, -1) + 'ves';
+  } else if (last2Letter == 'fe') {
+    pluralName = tableName.slice(0, -2) + 'ves';
+  }
+  return pluralName;
+}
+
+const getChildrenLookupOperator = (id, tableName, apiSchema, embedSchema) => {
+  const foreignField = getTableId(apiSchema.collectionName);
+  let pipeline = embedSchema.aggregatePipeline ? embedSchema.aggregatePipeline : [];
+  let match = {};
+  match[foreignField] = id;
+  pipeline = [{ '$match': match }, ...pipeline];
+  const lookupOperator = {
+    '$lookup': {
+      'from': tableName,
+      // 'localField': '_id',
+      // 'foreignField': foreignField,
+      'as': tableName,
+      'pipeline': pipeline
+    }
+  }
+  return lookupOperator;
+}
+
+const getParentLookupOperator = (foreignField, singularTableName, pluralTableName, expandSchema) => {
+  let pipeline = expandSchema.aggregatePipeline ? expandSchema.aggregatePipeline : [];
+  let match = {};
+  // match['_id'] = db.mongoose.Types.ObjectId(id);
+  // match['$expr'] = { "$eq": ["$_id", "$$userId"] };
+  // match['$expr'] = { "$eq": ["$email", "Aaron@test.com"] };
+  // match['$expr'] = { "$eq": ["$_id", "5f9e18f0d9886400089675eb"] };
+  // match['$expr'] = { "$eq": ["$_id", db.mongoose.Types.ObjectId("5f9e18f0d9886400089675eb")] };
+  match['$expr'] = { "$eq": ["$_id", "$objId"] };
+
+  pipeline = [
+    ...[
+      {
+        $addFields: {
+          objId: { "$toObjectId": "$$strId" }
+        }
+      },
+      { '$match': match }
+    ],
+    ...pipeline
+  ];
+  const lookupOperator = {
+    '$lookup': {
+      'from': pluralTableName,
+      "let": { "strId": "$" + foreignField },
+      'as': singularTableName,
+      'pipeline': pipeline
+    }
+  }
+  // console.log('getParentLookupOperator pipeline', pipeline);
+  return lookupOperator;
+}
+
+// Find a single Universal with an id via findById
+exports.showByFind = async (req, res) => {
   const apiSchema = getApiSchema(req, res);
 
   // console.log(apiSchema, req.params);
@@ -190,18 +268,101 @@ exports.show = (req, res) => {
 
   // only display specific fields or exclude some schema fields
   if (apiSchema.selectFields && apiSchema.selectFields.length > 0) {
-    query.select(apiSchema.selectFields);
+    // query.select(apiSchema.selectFields);
   }
 
   query.then((data) => {
     if (!data)
       res.status(404).send({ message: "Not found the item with id " + id });
-    else res.send(data);
-  })
-    .catch((err) => {
-      res.status(500).send({ message: "Error retrieving the item with id=" + id });
-    });
+    else {
+      res.send(data);
+    };
+  }).catch((err) => {
+    res.status(500).send({ message: "Error retrieving the item with id=" + id });
+  });
 };
+
+
+// Find a single Universal with an id via aggregate
+// To include children resources, add _embed
+// To include parent resource, add _expand
+// e.g. /pets/5fcd8f4a3b755f0008556057?_expand=user,file|mainImageId&_embed=pets,stories
+exports.show = async (req, res) => {
+  const apiSchema = getApiSchema(req, res);
+
+  // console.log(apiSchema, req.params);
+  const id = req.params[apiSchema.apiRoute];
+  if (!db.mongoose.isValidObjectId(id)) {
+    res.status(500).send({ message: id + " is not a ValidObjectId " });
+    return false;
+  }
+
+  const Universal = getUniversalDb(req, res);
+  // let query = await Universal.findById(id);
+
+  let pipelineOperators = [
+    {
+      '$match': { _id: db.mongoose.Types.ObjectId(id) }
+    }
+  ];
+
+  // To include children resources, add _embed
+  if (req.query._embed) {
+    req.query._embed.split(',').map(tableName => {
+      const embedSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == tableName);;
+      if (embedSchema) {
+        // console.log('tableName embedSchema', embedSchema)
+        pipelineOperators.push(getChildrenLookupOperator(id, tableName, apiSchema, embedSchema));
+      } else {
+        console.log('tableName schema not defined', tableName)
+      }
+
+    })
+  }
+
+  // To include parent resource, add _expand
+  if (req.query._expand) {
+    req.query._expand.split(',').map(tableName => {
+      const expandTable = tableName.split('|');
+      const singularTableName = expandTable[0];
+      const foreignField = expandTable[1] ? expandTable[1] : singularTableName + 'Id';
+      const pluralTableName = getPluralName(singularTableName);
+      const expandSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == pluralTableName);
+      if (expandSchema) {
+        // console.log('tableName expandSchema', expandSchema)
+        pipelineOperators.push(getParentLookupOperator(foreignField, singularTableName, pluralTableName, expandSchema));
+
+        pipelineOperators.push({ $unwind: { path: "$" + singularTableName, "preserveNullAndEmptyArrays": true } });
+      } else {
+        console.log('tableName schema not defined', singularTableName, pluralTableName)
+      }
+
+    })
+  }
+
+  if (apiSchema.aggregatePipeline) {
+    pipelineOperators = [...pipelineOperators, ...apiSchema.aggregatePipeline]
+  }
+
+
+  // console.log('===exports.show pipelineOperators', pipelineOperators, apiSchema);
+
+  let query = await Universal.aggregate(pipelineOperators).exec((err, data) => {
+    if (err) {
+      return console.log('aggregate error', err)
+    }
+    console.log('aggregate data', data)
+    if (!data || data.length == 0)
+      res.status(404).send({ message: "Not found the item with id " + id });
+    else {
+      res.send(data);
+    };
+  });
+
+  // console.log(query)
+  return query;
+};
+
 
 // Update a Universal by the id in the request
 exports.update = (req, res) => {
@@ -241,6 +402,9 @@ exports.update = (req, res) => {
       });
     });
 };
+
+
+
 
 // Delete a Universal with the specified id in the request
 exports.destroy = (req, res) => {

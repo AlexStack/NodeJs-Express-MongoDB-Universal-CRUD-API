@@ -79,6 +79,9 @@ module.exports.API_SCHEMAS = [
         "mongooseOption": { timestamps: false, strict: true },
         "searchFields": ["address"],
     },
+    /**
+    * "collectionName": "users"
+    */
     {
         "apiRoute": "users",
         "collectionName": "users",
@@ -103,7 +106,20 @@ module.exports.API_SCHEMAS = [
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name"],
         "selectFields": "-email -firebaseUid",
+        "aggregatePipeline": [
+            {
+                "$addFields":
+                    { id: "$_id" }
+            },
+            {
+                "$project":
+                    { password: 0, confirmPassword: 0, email: 0, "pets2.createdAt": 0, __v: 0, _id: 0 }
+            }
+        ]
     },
+    /**
+     * "collectionName": "pets"
+     */
     {
         "apiRoute": "pets",
         "collectionName": "pets",
@@ -118,7 +134,20 @@ module.exports.API_SCHEMAS = [
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name", "description"],
+        "aggregatePipeline": [
+            {
+                "$addFields":
+                    { id: "$_id" }
+            },
+            {
+                "$project":
+                    { __v: 0, _id: 0 }
+            }
+        ]
     },
+    /**
+    * "collectionName": "stories"
+    */
     {
         "apiRoute": "stories",
         "collectionName": "stories",
@@ -133,7 +162,20 @@ module.exports.API_SCHEMAS = [
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["title", "content", "tags"],
+        "aggregatePipeline": [
+            {
+                "$addFields":
+                    { id: "$_id" }
+            },
+            {
+                "$project":
+                    { __v: 0, _id: 0 }
+            }
+        ]
     },
+    /**
+    * "collectionName": "files"
+    */
     {
         "apiRoute": "files",
         "collectionName": "files",
@@ -149,6 +191,16 @@ module.exports.API_SCHEMAS = [
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["title", "description"],
+        "aggregatePipeline": [
+            {
+                "$addFields":
+                    { id: "$_id" }
+            },
+            {
+                "$project":
+                    { __v: 0, _id: 0 }
+            }
+        ]
     }
 ];
 
