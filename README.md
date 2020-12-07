@@ -125,6 +125,14 @@ DELETE http://localhost:8080/api/test1/<id>
 
 - GET /api/test1?\_sort=age&\_order=dasc&\_start=10&\_end=20&name_like=api
 
+## Get data from relationship collections or tables
+
+- To include children resources, add \_embed
+- To include parent resource, add \_expand
+- e.g. /pets/5fcd8f4a3b755f0008556057?\_expand=user,file|mainImageId&\_embed=pets,stories
+- \_expand=user,file|mainImageId means get parent data from parent table users and files. it will use userId and fileId as the foreign key by default unless you set it by table|foreignKey. e.g. file|mainImageId, file is the singular table name and mainImageId is the foreignKey
+- Only support the detail route at this moment, will add to the list route
+
 ## Debug locally
 
 - npm install universal-mean-api

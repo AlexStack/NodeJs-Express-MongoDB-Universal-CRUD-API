@@ -339,7 +339,6 @@ exports.show = async (req, res) => {
 
     })
   }
-
   if (apiSchema.aggregatePipeline) {
     pipelineOperators = [...pipelineOperators, ...apiSchema.aggregatePipeline]
   }
@@ -355,7 +354,7 @@ exports.show = async (req, res) => {
     if (!data || data.length == 0)
       res.status(404).send({ message: "Not found the item with id " + id });
     else {
-      res.send(data);
+      res.send(data[0]);
     };
   });
 
