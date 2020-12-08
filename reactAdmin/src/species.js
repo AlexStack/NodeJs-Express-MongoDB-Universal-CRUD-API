@@ -1,7 +1,7 @@
 import * as React from "react";
 import { List, Edit, Create, Datagrid, TextField, ReferenceField, EditButton, SimpleForm, TextInput, NumberInput, DateInput, RadioButtonGroupInput, SelectInput, SelectField, ReferenceInput, Filter } from 'react-admin';
 
-const PetSpecies = [
+const SpeciesSpecies = [
     { id: 'Dog', name: 'Dog' },
     { id: 'Cat', name: 'Cat' },
     { id: 'Guinea Pig', name: 'Guinea Pig' },
@@ -12,7 +12,7 @@ const PetSpecies = [
     { id: 'Horse', name: 'Horse' },
 ];
 
-const PetGenders = [
+const SpeciesGenders = [
     { id: 'Male', name: 'Male' },
     { id: 'Female', name: 'Female' },
     { id: 'Unknown', name: 'Unknown' },
@@ -22,44 +22,44 @@ const SearchFilter = (props) => (
     <Filter {...props}>
         <TextInput label="Search Name" source="name_like" alwaysOn />
         {/* <TextInput label="Search Species" source="species" /> */}
-        <SelectInput source="species" choices={PetSpecies} />
-        <SelectInput source="gender" choices={PetGenders} />
+        <SelectInput source="species" choices={SpeciesSpecies} />
+        <SelectInput source="gender" choices={SpeciesGenders} />
         <ReferenceInput label="User" source="userId" reference="users" allowEmpty>
             <SelectInput optionText="firstName" />
         </ReferenceInput>
     </Filter>
 );
 
-export const PetList = props => (
+export const SpeciesList = props => (
     <List filters={<SearchFilter />}  {...props}>
         <Datagrid>
             <TextField source="name" />
-            <SelectField source="species" choices={PetSpecies} />
-            <TextField source="age" />
-            <SelectField source="gender" choices={PetGenders} />
+            {/* <SelectField source="species" choices={SpeciesSpecies} /> */}
+            {/* <TextField source="age" /> */}
+            {/* <SelectField source="gender" choices={SpeciesGenders} /> */}
             <TextField source="priority" />
-            <ReferenceField source="userId" reference="users">
-                <TextField source="firstName" />
-            </ReferenceField>
+            <TextField source="mainImageUrl" />
             <EditButton />
         </Datagrid>
     </List>
 );
 
 
-export const PetCreate = props => (
+export const SpeciesCreate = props => (
     <Create {...props}>
         <SimpleForm redirect="list">
             <TextInput source="name" />
-            <SelectInput source="species" choices={PetSpecies} />
-            <NumberInput source="age" />
-            {/* <SelectInput source="gender" choices={PetGenders} /> */}
-            <RadioButtonGroupInput source="gender" choices={PetGenders} optionText="name" optionValue="id" />
+            {/* <SelectInput source="species" choices={SpeciesSpecies} />
+            <NumberInput source="age" /> */}
+            {/* <SelectInput source="gender" choices={SpeciesGenders} /> */}
+            {/* <RadioButtonGroupInput source="gender" choices={SpeciesGenders} optionText="name" optionValue="id" /> */}
             <TextInput multiline source="content" />
             <NumberInput source="priority" />
-            <ReferenceInput source="userId" reference="users">
+            <TextInput source="mainImageUrl" />
+            <TextInput source="youtubeUrl" />
+            {/* <ReferenceInput source="userId" reference="users">
                 <SelectInput optionText="name" />
-            </ReferenceInput>
+            </ReferenceInput> */}
             <DateInput source="updatedAt" />
         </SimpleForm>
     </Create>
@@ -70,19 +70,21 @@ const EditTitle = ({ record }) => {
     return <span>Edit {record ? `"${record.name}"` : ''}</span>;
 };
 
-export const PetEdit = props => (
+export const SpeciesEdit = props => (
     <Edit title={<EditTitle />} {...props}>
         <SimpleForm redirect="list">
             <TextInput source="name" />
-            <SelectInput source="species" choices={PetSpecies} />
-            <NumberInput source="age" />
-            <RadioButtonGroupInput source="gender" choices={PetGenders} optionText="name" optionValue="id" />
+            {/* <SelectInput source="species" choices={SpeciesSpecies} /> */}
+            {/* <NumberInput source="age" /> */}
+            {/* <RadioButtonGroupInput source="gender" choices={SpeciesGenders} optionText="name" optionValue="id" /> */}
             <NumberInput source="priority" />
-            <TextInput disabled source="id" />
+            {/* <TextInput disabled source="id" /> */}
             <TextInput multiline source="content" />
-            <ReferenceInput source="userId" reference="users">
+            <TextInput source="mainImageUrl" />
+            <TextInput source="youtubeUrl" />
+            {/* <ReferenceInput source="userId" reference="users">
                 <SelectInput optionText="name" />
-            </ReferenceInput>
+            </ReferenceInput> */}
             <DateInput source="updatedAt" />
         </SimpleForm>
     </Edit>

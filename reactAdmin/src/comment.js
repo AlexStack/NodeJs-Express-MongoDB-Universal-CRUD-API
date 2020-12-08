@@ -5,14 +5,18 @@ const PublicOrPrivate = [
     { id: true, name: 'Public' },
     { id: false, name: 'Private' }
 ];
-export const StoryList = props => (
+export const CommentList = props => (
     <List {...props}>
         <Datagrid>
             <TextField source="title" />
-            <SelectField source="public" choices={PublicOrPrivate} />
+            {/* <SelectField source="public" choices={PublicOrPrivate} /> */}
             <TextField source="priority" />
+            <TextField source="category" />
             <ReferenceField source="petId" reference="pets">
                 <TextField source="name" />
+            </ReferenceField>
+            <ReferenceField source="storyId" reference="stories">
+                <TextField source="title" />
             </ReferenceField>
             <ReferenceField source="userId" reference="users">
                 <TextField source="firstName" />
@@ -23,12 +27,12 @@ export const StoryList = props => (
 );
 
 
-export const StoryCreate = props => {
+export const CommentCreate = props => {
     const dataProvider = useDataProvider();
     const transform = async data => {
         let pet;
         await dataProvider
-            .getOne('pets', { id: data.petId })
+            .getOne('comments', { id: data.petId })
             .then(response => {
                 pet = response.data;
             });
@@ -40,10 +44,11 @@ export const StoryCreate = props => {
     };
 
     return (
-        <Create {...props} transform={transform}>
+        <Create {...props} >
             <SimpleForm redirect="list">
                 <TextInput source="title" />
-                <RadioButtonGroupInput source="public" choices={PublicOrPrivate} optionText="name" optionValue="id" />
+                <TextInput source="category" />
+                {/* <RadioButtonGroupInput source="public" choices={PublicOrPrivate} optionText="name" optionValue="id" /> */}
                 <TextInput multiline source="content" />
                 <NumberInput source="priority" />
                 <ReferenceInput source="petId" reference="pets">
@@ -64,7 +69,7 @@ const EditTitle = ({ record }) => {
 };
 
 
-export const StoryEdit = (props) => {
+export const CommentEdit = (props) => {
     const dataProvider = useDataProvider();
     const transform = async data => {
         let pet;
@@ -81,16 +86,20 @@ export const StoryEdit = (props) => {
     };
 
     return (
-        <Edit title={<EditTitle />} {...props} transform={transform}>
+        <Edit title={<EditTitle />} {...props} >
             <SimpleForm redirect="list">
                 <TextInput source="title" />
                 {/* <RadioButtonGroupInput source="public" choices={PublicOrPrivate} optionText="name" optionValue="id" /> */}
-                <BooleanInput source="public" />
+                {/* <BooleanInput source="public" /> */}
+                <TextInput source="category" />
                 <TextInput multiline source="content" />
                 <NumberInput source="priority" />
                 <ReferenceInput source="petId" reference="pets">
                     <SelectInput optionText="name" />
                 </ReferenceInput>
+                <TextInput source="storyId" />
+                <TextInput source="ownerId" />
+                <TextInput source="userId" />
                 {/* <ReferenceInput source="userId" reference="users">
                     <SelectInput optionText="name" />
                 </ReferenceInput> */}

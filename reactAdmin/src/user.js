@@ -10,8 +10,9 @@ export const UserList = props => (
     <List {...props}>
         <Datagrid>
             {/* <TextField source="id" /> */}
-            <TextField source="name" />
-            <TextField source="age" />
+            <TextField source="firstName" />
+            <TextField source="lastName" />
+            {/* <TextField source="age" /> */}
             <EmailField source="email" />
             <SelectField source="role" choices={UserRoles} />
             {/* <TextField source="title" />
@@ -23,13 +24,14 @@ export const UserList = props => (
 );
 
 const EditTitle = ({ record }) => {
-    return <span>Edit {record ? `"${record.name}"` : ''}</span>;
+    return <span>Edit {record ? `"${record.firstName}"` : ''}</span>;
 };
 
 export const UserEdit = props => (
     <Edit title={<EditTitle />} {...props}>
         <SimpleForm redirect="list">
-            <TextInput source="name" />
+            <TextInput source="firstName" />
+            <TextInput source="lastName" />
             <TextInput source="email" />
             <NumberInput source="age" />
             <SelectInput source="role" label="User Role" choices={UserRoles} />

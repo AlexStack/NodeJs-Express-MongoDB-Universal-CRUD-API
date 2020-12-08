@@ -79,19 +79,12 @@ module.exports.API_SCHEMAS = [
         "mongooseOption": { timestamps: false, strict: true },
         "searchFields": ["address"],
     },
-    /**
-    * "collectionName": "users"
-    */
     {
         "apiRoute": "users",
         "collectionName": "users",
         "schema": {
             name: String,
-            email: {
-                type: String,
-                required: true,
-                select: true,
-            },
+            email: String,
             password: {
                 type: String,
                 required: true,
@@ -106,20 +99,7 @@ module.exports.API_SCHEMAS = [
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name"],
         "selectFields": "-email -firebaseUid",
-        "aggregatePipeline": [
-            {
-                "$addFields":
-                    { id: "$_id" }
-            },
-            {
-                "$project":
-                    { password: 0, confirmPassword: 0, email2: 0, "pets2.createdAt": 0, __v: 0, _id: 0 }
-            }
-        ]
     },
-    /**
-     * "collectionName": "pets"
-     */
     {
         "apiRoute": "pets",
         "collectionName": "pets",
@@ -128,26 +108,13 @@ module.exports.API_SCHEMAS = [
             species: String,
             gender: String,
             type: String,
-            content: String,
+            detail: String,
             priority: Number,
             userId: String
         },
         "mongooseOption": { timestamps: true, strict: false },
-        "searchFields": ["name", "content"],
-        "aggregatePipeline": [
-            {
-                "$addFields":
-                    { id: "$_id" }
-            },
-            {
-                "$project":
-                    { __v: 0, _id: 0 }
-            }
-        ]
+        "searchFields": ["name", "description"],
     },
-    /**
-    * "collectionName": "stories"
-    */
     {
         "apiRoute": "stories",
         "collectionName": "stories",
@@ -162,26 +129,13 @@ module.exports.API_SCHEMAS = [
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["title", "content", "tags"],
-        "aggregatePipeline": [
-            {
-                "$addFields":
-                    { id: "$_id" }
-            },
-            {
-                "$project":
-                    { __v: 0, _id: 0 }
-            }
-        ]
     },
-    /**
-    * "collectionName": "files"
-    */
     {
         "apiRoute": "files",
         "collectionName": "files",
         "schema": {
             title: String,
-            content: String,
+            description: String,
             type: String, // image, video, other file type
             url: String,
             priority: Number,
@@ -190,73 +144,7 @@ module.exports.API_SCHEMAS = [
             userId: String
         },
         "mongooseOption": { timestamps: true, strict: false },
-        "searchFields": ["title", "content"],
-        "aggregatePipeline": [
-            {
-                "$addFields":
-                    { id: "$_id" }
-            },
-            {
-                "$project":
-                    { __v: 0, _id: 0 }
-            }
-        ]
-    },
-    /**
-    * "collectionName": "species"
-    */
-    {
-        "apiRoute": "species",
-        "collectionName": "species",
-        "schema": {
-            name: String,
-            content: String,
-            mainImageUrl: String,
-            priority: Number
-        },
-        "mongooseOption": { timestamps: true, strict: false },
-        "searchFields": ["title", "content"],
-        "aggregatePipeline": [
-            {
-                "$addFields":
-                    { id: "$_id" }
-            },
-            {
-                "$project":
-                    { __v: 0, _id: 0 }
-            }
-        ]
-    },
-    /**
-    * "collectionName": "comments"
-    */
-    {
-        "apiRoute": "comments",
-        "collectionName": "comments",
-        "schema": {
-            title: String,
-            content: String,
-            category: String, // petProfile, petStory, petOwner
-            parentId: String,
-            priority: Number,
-            storyId: String,
-            petId: String,
-            ownerId: String,
-            userId: String,
-            nickname: String
-        },
-        "mongooseOption": { timestamps: true, strict: false },
-        "searchFields": ["title", "content"],
-        "aggregatePipeline": [
-            {
-                "$addFields":
-                    { id: "$_id" }
-            },
-            {
-                "$project":
-                    { __v: 0, _id: 0 }
-            }
-        ]
-    },
+        "searchFields": ["title", "description"],
+    }
 ];
 
