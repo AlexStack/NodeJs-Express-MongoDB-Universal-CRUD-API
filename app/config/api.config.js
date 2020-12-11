@@ -130,6 +130,7 @@ module.exports.API_SCHEMAS = [
             type: String,
             content: String,
             priority: Number,
+            editorChoice: Number,
             userId: String
         },
         "mongooseOption": { timestamps: true, strict: false },
@@ -157,6 +158,7 @@ module.exports.API_SCHEMAS = [
             tags: String,
             public: Boolean,
             priority: Number,
+            editorChoice: Number,
             petId: String,
             userId: String
         },
@@ -185,6 +187,7 @@ module.exports.API_SCHEMAS = [
             type: String, // image, video, other file type
             url: String,
             priority: Number,
+            editorChoice: Number,
             storyId: String,
             petId: String,
             userId: String
@@ -212,6 +215,7 @@ module.exports.API_SCHEMAS = [
             name: String,
             content: String,
             mainImageUrl: String,
+            editorChoice: Number,
             priority: Number
         },
         "mongooseOption": { timestamps: true, strict: false },
@@ -239,6 +243,7 @@ module.exports.API_SCHEMAS = [
             category: String, // petProfile, petStory, petOwner
             parentId: String,
             priority: Number,
+            editorChoice: Number,
             storyId: String,
             petId: String,
             ownerId: String,
@@ -247,6 +252,32 @@ module.exports.API_SCHEMAS = [
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["title", "content"],
+        "aggregatePipeline": [
+            {
+                "$addFields":
+                    { id: "$_id" }
+            },
+            {
+                "$project":
+                    { __v: 0, _id: 0 }
+            }
+        ]
+    },
+    /**
+    * "collectionName": "likes"
+    */
+    {
+        "apiRoute": "likes",
+        "collectionName": "likes",
+        "schema": {
+            type: String, // thumb up, heart, sad, cry, lol, surprise
+            targetId: String, // target item id 
+            category: String, // petProfile, petStory, petOwner, comment
+            userId: String,
+            appId: String // app unique id
+        },
+        "mongooseOption": { timestamps: true, strict: false },
+        "searchFields": ["type", "category"],
         "aggregatePipeline": [
             {
                 "$addFields":
