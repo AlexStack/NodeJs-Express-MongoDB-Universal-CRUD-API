@@ -155,6 +155,7 @@ module.exports.API_SCHEMAS = [
         "schema": {
             title: String,
             content: String,
+            species: String,
             tags: String,
             public: Boolean,
             priority: Number,
