@@ -359,6 +359,8 @@ exports.index = (req, res) => {
     if (!data || data.length == 0)
       res.status(404).send({ message: "Not found the item with id ", data });
     else {
+      res.set("Access-Control-Expose-Headers", "X-Total-Count");
+      res.set("x-total-count", data.length);
       res.send(data);
     };
   });
