@@ -42,7 +42,7 @@ exports.store = (req, res) => {
     });
 };
 
-// Retrieve all universals from the database.
+// Retrieve all universals from the database by find()
 exports.indexByFind = (req, res) => {
 
   // Universal = db[req.url.replace('/' + API_CONFIG.API_BASE, '')];
@@ -178,7 +178,7 @@ exports.indexByFind = (req, res) => {
 };
 
 
-// Retrieve all universals from the database by aggregate
+// Retrieve all universals from the database by aggregate()
 exports.index = (req, res) => {
 
   // Universal = db[req.url.replace('/' + API_CONFIG.API_BASE, '')];
@@ -293,33 +293,6 @@ exports.index = (req, res) => {
   }
 
 
-  // let query = Universal.find(condition).sort(defaultSort);
-
-  // // only display specific fields or exclude some fields
-  // if (apiSchema.selectFields && apiSchema.selectFields.length > 0) {
-  //   query.select(apiSchema.selectFields);
-  // }
-
-  // if (defaultSkip > 0) {
-  //   query.skip(defaultSkip);
-  // }
-  // if (defaultLimit > 0) {
-  //   query.limit(defaultLimit);
-  // }
-  // query.then(async (data) => {
-  //   const totalNumber = await Universal.countDocuments(condition);
-  //   console.log('defaultSort', defaultSort, totalNumber);
-  //   // const totalNumber = data.length;
-  //   res.set("Access-Control-Expose-Headers", "X-Total-Count");
-  //   res.set("x-total-count", totalNumber);
-  //   res.send(data);
-  // }).catch((err) => {
-  //   res.status(500).send({
-  //     message:
-  //       err.message || "Some error occurred while retrieving items.",
-  //   });
-  // });
-
   let pipelineOperators = [
     {
       // '$match': { _id: db.mongoose.Types.ObjectId(id) }
@@ -366,6 +339,7 @@ exports.index = (req, res) => {
     })
   }
 
+  // test nested query, not working
   // pipelineOperators.push(
   //   { '$match': { "$pet.species": "Cat" } }
   // )
