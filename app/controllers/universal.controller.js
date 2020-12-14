@@ -302,6 +302,9 @@ exports.index = (req, res) => {
       '$sort': defaultSort,
     },
     {
+      '$skip': defaultSkip,
+    },
+    {
       '$limit': defaultLimit,
     }
   ];
