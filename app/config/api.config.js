@@ -17,7 +17,7 @@ module.exports.API_BASE = process.env.API_BASE || 'api/';
 module.exports.PORT = process.env.PORT || '8080';
 module.exports.CORS_ORIGIN = process.env.CORS_ORIGIN || [/localhost/, /\.test$/];
 module.exports.IS_SERVERLESS = isServerless;
-
+module.exports.JWT_SECRET = process.env.JWT_SECRET || 'Ki8H1-JWT-U&HJs92dj2.d32slU&dk2+petStory' + this.DB;
 
 /**
  * 
