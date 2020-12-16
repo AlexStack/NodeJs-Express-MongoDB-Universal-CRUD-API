@@ -136,7 +136,7 @@ DELETE http://localhost:8080/api/test1/<id>
 ## User auth check system (check if the user is the owner or admin via JWT access token)
 
 - ENABLE_AUTH: enable user auth check system or not
-- ENABLE_AUTH=true, all edit/delete/add(update/destroy/create) has to be the owner or admin
+- ENABLE_AUTH=true, all edit/delete/add(update/destroy/create) requests has to be the owner or admin
 - ENABLE_AUTH=false, test & debug mode, everyone can view/edit/delete
 - e.g. module.exports.ENABLE_AUTH = true;
 
@@ -149,10 +149,19 @@ DELETE http://localhost:8080/api/test1/<id>
 - by default all GET request no need check user auth
 - if we want enable auth check for a table/collection list/show GET request
 - set readRules for each table/collection like below
-- "readRules": { "checkAuth": true, "checkOwner": false }
+- "readRules": { "checkAuth": true, "checkOwner": true }
+- e.g. CRUD for orders table/collection, need to login first to do anything, only the owner itself can view/add/edit/delete his/her orders
 
 - Who is admin? Set role field in users table to admin or xxxAdmin (any role value contains string "admin" will consider is an admin role)
 - e.g. role=webAdmin, role=admin, role=SuperAdmin, role=Dashboard Admin
+- admin has all permissions for now
+
+## return data - all JSON format
+
+- add or update request, returns the NEW item object if success
+- list request, returns an array contains all item objects
+- show/detail request, returns the item object if success
+- delete request, the http status returns 200 if success
 
 ## Debug locally
 
