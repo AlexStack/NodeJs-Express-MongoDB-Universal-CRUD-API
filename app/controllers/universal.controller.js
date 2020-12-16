@@ -747,7 +747,7 @@ exports.update = async (req, res) => {
   const hasPermission = await hasWritePermission(Universal, id, req, res);
   if (!hasPermission) {
     res.status(404).send({
-      message: `No permission to update item with id=${id}. currentUser: ${req.currentUser?.id}`,
+      message: `No permission to update item with id=${id}. currentUser: ${req.currentUser.id}`,
     });
     return false;
   }
@@ -795,7 +795,7 @@ exports.destroy = async (req, res) => {
   const hasPermission = await hasWritePermission(Universal, id, req, res);
   if (!hasPermission) {
     res.status(404).send({
-      message: `No permission to DELETE item with id=${id}. currentUser: ${req.currentUser?.id}`,
+      message: `No permission to DELETE item with id=${id}. currentUser: ${req.currentUser.id}`,
     });
     return false;
   }
