@@ -1,9 +1,8 @@
 const API_CONFIG = require("../config/api.config");
 const db = require("../models");
-const jwt = require('jsonwebtoken');
 
 const getApiRoute = (req, res) => {
-  // console.log('req.route.path',req.route.path);
+  console.log(req.route.path);
   // console.log(req._parsedUrl);  
   const apiRoute = req._parsedUrl.pathname.replace('/' + API_CONFIG.API_BASE, '');
   if (apiRoute.indexOf('/search') != -1) {
@@ -24,15 +23,12 @@ const getApiSchema = (req, res) => {
 }
 
 // Create and Save a new Universal
-exports.store = async (req, res) => {
+exports.store = (req, res) => {
 
   const Universal = getUniversalDb(req, res);
-  const hasPermission = await verifyUserPermission(Universal, null, req, res);
-  if (!hasPermission) {
-    return false;
-  }
 
   const universal = new Universal(req.body);
+
   // Save Universal in the database
   universal
     .save(universal)
@@ -52,7 +48,7 @@ exports.indexByFind = (req, res) => {
   // Universal = db[req.url.replace('/' + API_CONFIG.API_BASE, '')];
   const Universal = getUniversalDb(req, res);
 
-  // console.log('===== query', req.query)
+  console.log('===== query', req.query)
   const apiSchema = getApiSchema(req, res);
   // console.log('apiSchema=', apiSchema);
 
@@ -188,7 +184,7 @@ exports.index = (req, res) => {
   // Universal = db[req.url.replace('/' + API_CONFIG.API_BASE, '')];
   const Universal = getUniversalDb(req, res);
 
-  // console.log('===== query', req.query)
+  console.log('===== query', req.query)
   const apiSchema = getApiSchema(req, res);
   // console.log('apiSchema=', apiSchema);
 
@@ -356,27 +352,21 @@ exports.index = (req, res) => {
     pipelineOperators = [...pipelineOperators, ...apiSchema.aggregatePipeline]
   }
 
-  // console.log('===exports.show pipelineOperators', pipelineOperators);
+  console.log('===exports.show pipelineOperators', pipelineOperators);
 
-  const aggregateData = Universal.aggregate(pipelineOperators).exec((err, data) => {
+  let query = Universal.aggregate(pipelineOperators).exec((err, data) => {
     if (err) {
       return console.log('aggregate error', err)
     }
-    // if (req.query?._responseType == 'returnData') {
-    //   console.log('aggregate data', data)
-    //   return data;
-    // } else {
-    // console.log('aggregate data.length', data.length)
+    console.log('aggregate data.length', data.length)
 
     res.set("Access-Control-Expose-Headers", "X-Total-Count");
     res.set("x-total-count", data.length);
     res.send(data);
-    // }
-
   });
 
-  // console.log('aggregate aggregateQuery', aggregateData)
-  return aggregateData;
+  // console.log(query)
+  return query;
 };
 
 
@@ -428,7 +418,7 @@ const getChildrenLookupOperator = (id, tableName, apiSchema, embedSchema) => {
       'pipeline': pipeline
     }
   }
-  // console.log('lookupOperator pipeline.match', match);
+  console.log('lookupOperator pipeline.match', match);
   return lookupOperator;
 }
 
@@ -566,7 +556,7 @@ exports.show = async (req, res) => {
     if (err) {
       return console.log('aggregate error', err)
     }
-    // console.log('aggregate data', data)
+    console.log('aggregate data', data)
     if (!data || data.length == 0)
       res.status(404).send({ message: "Not found the item with id " + id });
     else {
@@ -578,59 +568,19 @@ exports.show = async (req, res) => {
   return query;
 };
 
-const verifyUserPermission = async (Universal, id, req, res) => {
-  if (API_CONFIG.ENABLE_AUTH) {
-    if (!req.currentUser) {
-      res.status(401).send({
-        message: `Please login first, no currentUser!!`,
-      });
-    }
-    if (req.currentUser.role && req.currentUser.role.toLowerCase().indexOf('admin') != -1) {
-      // currentUser is admin
-      console.log('=====currentUser is admin', req.currentUser.firstName);
-    } else {
-      // normal user, must be owner itself
-
-      const existItem = id ? await Universal.findById(id) : req.body;
-      if (!id) {
-        console.log('======no id, add new item, check auth:', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME]);
-      }
-      if (!existItem) {
-        res.status(401).send({
-          message: `Item not exists`,
-        });
-      }
-      // hasOwnProperty return false if field not defined in api.config.js
-      if ((existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME) || existItem[API_CONFIG.USER_ID_NAME]) && req.currentUser.id != existItem[API_CONFIG.USER_ID_NAME]) {
-
-        res.status(401).send({
-          message: "It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.USER_ID_NAME]),
-        });
-        return false;
-      }
-      console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME], existItem, existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME));
-    }
-  }
-  return true;
-}
 
 // Update a Universal by the id in the request
-exports.update = async (req, res) => {
+exports.update = (req, res) => {
   if (!req.body) {
     return res.status(400).send({
       message: "Data to update can not be empty!",
     });
   }
   const apiSchema = getApiSchema(req, res);
-  console.log('====update req', req.currentUser, req.body);
+  // console.log(apiSchema, req.params);
   const id = req.params[apiSchema.apiRoute];
+
   const Universal = getUniversalDb(req, res);
-
-  const hasPermission = await verifyUserPermission(Universal, id, req, res);
-  if (!hasPermission) {
-    return false;
-  }
-
   Universal.findByIdAndUpdate(id, req.body, {
     useFindAndModify: false,
     upsert: true,
@@ -662,17 +612,11 @@ exports.update = async (req, res) => {
 
 
 // Delete a Universal with the specified id in the request
-exports.destroy = async (req, res) => {
+exports.destroy = (req, res) => {
   const apiSchema = getApiSchema(req, res);
   // console.log(apiSchema, req.params);
   const id = req.params[apiSchema.apiRoute];
   const Universal = getUniversalDb(req, res);
-
-  const hasPermission = await verifyUserPermission(Universal, id, req, res);
-  if (!hasPermission) {
-    return false;
-  }
-
   Universal.findByIdAndRemove(id)
     .then((data) => {
       if (!data) {
@@ -720,44 +664,3 @@ exports.search = (req, res) => {
       });
     });
 };
-
-// user token, todo: security
-exports.getUserToken = async (req, res) => {
-  let validPassword = true;
-  if (!validPassword) {
-    return res.status(400).json({ error: "Password is wrong" });
-  }
-
-  const Universal = getUniversalDb(req, res);
-
-  if (!req.query.email) {
-    return res.status(400).json({ error: "no email" });
-  }
-  req.query._responseType = 'returnData';
-  // return this.index(req, res);
-  // const returnData = this.index(req, res);
-
-
-
-  const userData = await Universal.findOne({ email: req.query.email }).exec();
-  console.log('_responseType userData', userData);
-
-  let userProfile = {
-    id: userData._id ? userData._id : userData.id,
-    email: userData.email,
-    firstName: userData.firstName,
-    lastName: userData.lastName,
-    role: userData.role,
-  };
-  console.log('_responseType userProfile', userData['firstName']);
-  // create token
-  userProfile.accessToken = jwt.sign(
-    userProfile,// payload data
-    API_CONFIG.JWT_SECRET
-  );
-
-
-  res.send(userProfile);
-  // res.set("x-total-count", data.length);
-  // res.send(data);
-}

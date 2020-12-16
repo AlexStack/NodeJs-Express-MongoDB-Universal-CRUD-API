@@ -101,7 +101,9 @@ module.exports.API_SCHEMAS = [
                 type: String,
                 select: false,
             },
-            role: String
+            role: String,
+            firstName: String,
+            lastName: String
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name"],
@@ -135,6 +137,7 @@ module.exports.API_SCHEMAS = [
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name", "content"],
+        "writeRule": { "isOwner": true },
         "aggregatePipeline": [
             {
                 "$addFields":
@@ -292,3 +295,6 @@ module.exports.API_SCHEMAS = [
     },
 ];
 
+module.exports.ENABLE_AUTH = true;
+module.exports.USER_ROUTE = 'users';
+module.exports.USER_ID_NAME = 'userId';

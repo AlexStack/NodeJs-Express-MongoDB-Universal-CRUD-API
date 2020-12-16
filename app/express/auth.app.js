@@ -6,7 +6,7 @@ const resource = require("../routes/express-resource-alex");
 const app = express();
 const db = require("../models");
 const fs = require("fs");
-const checkAuth = require("../middlewares/checkAuth");
+const jwt = require('jsonwebtoken');
 
 // read config file from the app
 const configFilePaths = ['/config/meanapi.config.js', '/config/api.config.js', '/meanapi.config.js', '/api.config.js'];
@@ -45,9 +45,6 @@ app.use(bodyParser.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// auto middleware
-app.use(checkAuth);
-
 // simple route for api index page
 app.get("/" + API_CONFIG.API_BASE, (req, res) => {
     res.json({ message: "Welcome to Alex' Universal API(Node Express Mongodb) application" });
@@ -82,18 +79,6 @@ db.mongoose
  */
 let universal = null;
 universal = require("../controllers/universal.controller");
-
-// user auth routes
-if (API_CONFIG.ENABLE_AUTH && API_CONFIG.USER_ROUTE) {
-    app.get("/" + API_CONFIG.API_BASE + API_CONFIG.USER_ROUTE + "/getUserToken", (req, res, next) => {
-        universal.getUserToken(req, res, next);
-    });
-
-}
-
-
-
-// other universal routes
 API_CONFIG.API_SCHEMAS.forEach(apiSchema => {
     // universal = require("../controllers/universal.controller");
     app.resource(API_CONFIG.API_BASE + apiSchema.apiRoute, universal);
@@ -102,6 +87,30 @@ API_CONFIG.API_SCHEMAS.forEach(apiSchema => {
     });
 });
 
+// user auth
+// login route
+app.get("/" + API_CONFIG.API_BASE + "userToken", async (req, res) => {
+    let validPassword = true;
+    if (!validPassword)
+        return res.status(400).json({ error: "Password is wrong" });
+    // create token
+    const token = jwt.sign(
+        // payload data1
+        {
+            name: "user.name",
+            id: "user._id",
+        },
+        API_CONFIG.JWT_SECRET
+    );
+    res.header("auth-token", token).json({
+        error: null,
+        data: {
+            token,
+        },
+    });
+    // res.set("x-total-count", data.length);
+    // res.send(data);
+});
 
 
 app.set('config', API_CONFIG);
