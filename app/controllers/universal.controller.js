@@ -27,9 +27,11 @@ const getApiSchema = (req, res) => {
 exports.store = async (req, res) => {
 
   const Universal = getUniversalDb(req, res);
-  const hasPermission = await verifyUserPermission(Universal, null, req, res);
+  const hasPermission = await hasWritePermission(Universal, null, req, res);
   if (!hasPermission) {
-    return false;
+    res.status(401).send({
+      message: "User do not has the permission to create new item",
+    });
   }
 
   const universal = new Universal(req.body);
@@ -539,7 +541,7 @@ exports.show = async (req, res) => {
   // check if it's set only the owner can view the list
   const hasPermission = await hasReadPermission(apiSchema, Universal, id, req, res);
   if (!hasPermission) {
-    res.status(401).send({ message: " No read permission" });
+    res.status(401).send({ message: " No read permission for " + req.currentUser?.firstName });
     return false;
   }
 
@@ -620,39 +622,77 @@ exports.show = async (req, res) => {
   return query;
 };
 
-const verifyUserPermission = async (Universal, id, req, res) => {
+// const verifyUserPermission = async (Universal, id, req, res) => {
+//   if (!API_CONFIG.ENABLE_AUTH) {
+//     return true;
+//   }
+//   if (!req.currentUser) {
+//     res.status(401).send({
+//       message: `Please login first, no currentUser!!`,
+//     });
+//   }
+//   if (req.currentUser.role && req.currentUser.role.toLowerCase().indexOf('admin') != -1) {
+//     // currentUser is admin
+//     console.log('=====currentUser is admin', req.currentUser.firstName);
+//   } else {
+//     // normal user, must be owner itself
+
+//     const existItem = id ? await Universal.findById(id) : req.body;
+//     if (!id) {
+//       console.log('======no id, add new item, check auth:', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME]);
+//     }
+//     if (!existItem) {
+//       res.status(401).send({
+//         message: `Item not exists`,
+//       });
+//     }
+//     // hasOwnProperty return false if userId not defined in api.config.js
+//     if ((existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME) || existItem[API_CONFIG.USER_ID_NAME]) && req.currentUser.id != existItem[API_CONFIG.USER_ID_NAME]) {
+
+//       res.status(401).send({
+//         message: "It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.USER_ID_NAME]),
+//       });
+//       return false;
+//     }
+//     console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME], existItem, existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME));
+//     return true;
+//   }
+
+// }
+
+
+const hasWritePermission = async (Universal, id, req, res) => {
   if (!API_CONFIG.ENABLE_AUTH) {
     return true;
   }
   if (!req.currentUser) {
-    res.status(401).send({
-      message: `Please login first, no currentUser!!`,
-    });
+    return false;
   }
   if (req.currentUser.role && req.currentUser.role.toLowerCase().indexOf('admin') != -1) {
     // currentUser is admin
     console.log('=====currentUser is admin', req.currentUser.firstName);
+    return true;
   } else {
     // normal user, must be owner itself
 
     const existItem = id ? await Universal.findById(id) : req.body;
     if (!id) {
       console.log('======no id, add new item, check auth:', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME]);
+      // if no id, refactor the formData(req.body) with req.currentUser.id
+      existItem[API_CONFIG.USER_ID_NAME] = req.currentUser.id;
     }
     if (!existItem) {
-      res.status(401).send({
-        message: `Item not exists`,
-      });
+      console.log(`Item not exists`);
+      return false;
     }
-    // hasOwnProperty return false if field not defined in api.config.js
+    // hasOwnProperty return false if userId not defined in api.config.js
     if ((existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME) || existItem[API_CONFIG.USER_ID_NAME]) && req.currentUser.id != existItem[API_CONFIG.USER_ID_NAME]) {
-
-      res.status(401).send({
-        message: "It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.USER_ID_NAME]),
-      });
+      console.log("It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.USER_ID_NAME]));
       return false;
     }
     console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME], existItem, existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME));
+
+    return true;
   }
 
 }
@@ -672,9 +712,12 @@ const hasReadPermission = async (apiSchema, Universal, id, req, res) => {
       // normal user, must be owner itself
       if (apiSchema.schema.hasOwnProperty(API_CONFIG.USER_ID_NAME)) {
         const existItem = id ? await Universal.findById(id) : req.body;
-        if (existItem[API_CONFIG.USER_ID_NAME] && req.currentUser.id == existItem[API_CONFIG.USER_ID_NAME]) {
+        if (existItem && existItem[API_CONFIG.USER_ID_NAME] && req.currentUser.id == existItem[API_CONFIG.USER_ID_NAME]) {
           console.log('=====hasReadPermission, passed, currentUser is the owner');
           hasPermission = true;
+        }
+        if (id && !existItem) {
+          console.log('=====hasReadPermission, item not find: ' + id);
         }
       } else {
         // property not defined in schema(api.config.js)
@@ -701,14 +744,20 @@ exports.update = async (req, res) => {
   const id = req.params[apiSchema.apiRoute];
   const Universal = getUniversalDb(req, res);
 
-  const hasPermission = await verifyUserPermission(Universal, id, req, res);
+  const hasPermission = await hasWritePermission(Universal, id, req, res);
   if (!hasPermission) {
+    res.status(404).send({
+      message: `No permission to update item with id=${id}. currentUser: ${req.currentUser?.id}`,
+    });
     return false;
   }
+  // console.log('update req.body', req.body)
 
+  // TODO: if id not exist, create a new item -- for PUT method
   Universal.findByIdAndUpdate(id, req.body, {
     useFindAndModify: false,
     upsert: true,
+    new: true, // return new data instead old data
   })
     .then((data) => {
       if (!data) {
@@ -743,8 +792,11 @@ exports.destroy = async (req, res) => {
   const id = req.params[apiSchema.apiRoute];
   const Universal = getUniversalDb(req, res);
 
-  const hasPermission = await verifyUserPermission(Universal, id, req, res);
+  const hasPermission = await hasWritePermission(Universal, id, req, res);
   if (!hasPermission) {
+    res.status(404).send({
+      message: `No permission to DELETE item with id=${id}. currentUser: ${req.currentUser?.id}`,
+    });
     return false;
   }
 

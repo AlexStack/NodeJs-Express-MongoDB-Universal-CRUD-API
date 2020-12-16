@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = async (req, res, next) => {
     const apiRoute = req._parsedUrl.pathname.replace('/' + API_CONFIG.API_BASE, '');
-    const apiSchema = API_CONFIG.API_SCHEMAS.find(item => item.apiRoute == apiRoute);
+    const apiSchema = API_CONFIG.API_SCHEMAS.find(item => item.apiRoute == apiRoute.split('/')[0]);
 
     let shouldPassAuth = false;
     if (apiRoute.indexOf('/getUserToken') != -1) {
@@ -19,7 +19,7 @@ module.exports = async (req, res, next) => {
         }
     }
 
-    console.log('checkAuth apiRoute', apiRoute, req.method);
+    console.log('checkAuth apiRoute', apiRoute, req.method, apiSchema);
 
     if (!API_CONFIG.ENABLE_AUTH || shouldPassAuth) {
         next();

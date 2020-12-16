@@ -137,8 +137,8 @@ module.exports.API_SCHEMAS = [
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name", "content"],
-        "writeRules": { "checkOwner": true },
-        "readRules": { "checkAuth": true, "checkOwner": false },
+        // "writeRules": { "checkOwner": true },
+        // "readRules": { "checkAuth": true, "checkOwner": false },
         "aggregatePipeline": [
             {
                 "$addFields":
@@ -284,6 +284,38 @@ module.exports.API_SCHEMAS = [
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["type", "category"],
+        "aggregatePipeline": [
+            {
+                "$addFields":
+                    { id: "$_id" }
+            },
+            {
+                "$project":
+                    { __v: 0, _id: 0 }
+            }
+        ]
+    },
+    /**
+     * "collectionName": "orders"
+     * Test readRules, only owner itself can view/edit
+     */
+    {
+        "apiRoute": "orders",
+        "collectionName": "orders",
+        "schema": {
+            name: String,
+            content: String,
+            productId: String,
+            status: String,
+            category: String,
+            storyId: String,
+            petId: String,
+            userId: String
+        },
+        "mongooseOption": { timestamps: true, strict: false },
+        "searchFields": ["name", "content"],
+        "writeRules": { "checkOwner": true },
+        "readRules": { "checkAuth": true, "checkOwner": true },
         "aggregatePipeline": [
             {
                 "$addFields":
