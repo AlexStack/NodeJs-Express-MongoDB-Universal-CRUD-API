@@ -294,7 +294,12 @@ module.exports.API_SCHEMAS = [
         ]
     },
 ];
-
+// ENABLE_AUTH=true, all edit/delete/add has to be the owner or admin
+// ENABLE_AUTH=false, test & debug mode, everyone can edit/delete
 module.exports.ENABLE_AUTH = true;
+
+// user table api endpoint route
 module.exports.USER_ROUTE = 'users';
+
+// the foreign key id in other tables to user id
 module.exports.USER_ID_NAME = 'userId';

@@ -3,11 +3,18 @@ const db = require("../models");
 const jwt = require('jsonwebtoken');
 
 module.exports = async (req, res, next) => {
-    if (!API_CONFIG.ENABLE_AUTH) {
+    const apiRoute = req._parsedUrl.pathname.replace('/' + API_CONFIG.API_BASE, '');
+    let shouldPassAuth = false;
+    if (apiRoute.indexOf('/getUserToken') != -1) {
+        shouldPassAuth = true;
+    }
+    if (!API_CONFIG.ENABLE_AUTH || shouldPassAuth) {
         next();
     } else {
+
+
         const { authorization } = req.headers;
-        // console.log('checkAuth req', req);
+        console.log('checkAuth apiRoute', apiRoute, req.method);
         if (!authorization) {
             return res.status(401).send({
                 error: "Please login first!"
