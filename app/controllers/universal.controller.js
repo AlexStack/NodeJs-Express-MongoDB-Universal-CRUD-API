@@ -541,7 +541,7 @@ exports.show = async (req, res) => {
   // check if it's set only the owner can view the list
   const hasPermission = await hasReadPermission(apiSchema, Universal, id, req, res);
   if (!hasPermission) {
-    res.status(401).send({ message: " No read permission for " + req.currentUser?.firstName });
+    res.status(401).send({ message: " No read permission for " + req.currentUser.id });
     return false;
   }
 
