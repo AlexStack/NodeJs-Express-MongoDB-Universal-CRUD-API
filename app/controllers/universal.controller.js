@@ -183,7 +183,7 @@ exports.indexByFind = (req, res) => {
 
 
 // Retrieve all universals from the database by aggregate()
-exports.index = (req, res) => {
+exports.index = async (req, res) => {
 
   // Universal = db[req.url.replace('/' + API_CONFIG.API_BASE, '')];
   const Universal = getUniversalDb(req, res);
@@ -265,7 +265,9 @@ exports.index = (req, res) => {
     const idAry = (typeof originId == 'string') ? originId.split(',') : originId;
     let objIdAry = [];
     idAry.map(idStr => {
-      objIdAry.push(db.mongoose.Types.ObjectId(idStr));
+      if (db.mongoose.isValidObjectId(idStr)) {
+        objIdAry.push(db.mongoose.Types.ObjectId(idStr));
+      }
     })
     condition["_id"] = { "$in": objIdAry };
   }
@@ -274,6 +276,13 @@ exports.index = (req, res) => {
   if (req.query.q && req.query.q.trim() != '') {
     return this.search(req, res);
   }
+
+  // check if it's set only the owner can view the list
+  const hasPermission = await hasReadPermission(apiSchema, Universal, null, req, res);
+  if (!hasPermission) {
+    condition[API_CONFIG.USER_ID_NAME] = req.currentUser.id;
+  }
+
 
   console.log('find query condition:', condition);
 
@@ -315,11 +324,17 @@ exports.index = (req, res) => {
 
   // To include children resources, add _embed
   if (req.query._embed) {
-    req.query._embed.split(',').map(tableName => {
+    await req.query._embed.split(',').map(async (tableName) => {
       const embedSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == tableName);;
       if (embedSchema) {
-        // console.log('tableName embedSchema', embedSchema)
-        pipelineOperators.push(getChildrenLookupOperator(null, tableName, apiSchema, embedSchema));
+        const hasPermission = await hasReadPermission(embedSchema, Universal, null, req, res);
+        if (hasPermission) {
+          console.log('tableName embedSchema', embedSchema)
+          pipelineOperators.push(getChildrenLookupOperator(null, tableName, apiSchema, embedSchema));
+        } else {
+          console.log('No read permission for embedSchema ', embedSchema.apiRoute);
+        }
+
       } else {
         console.log('tableName schema not defined', tableName)
       }
@@ -328,22 +343,28 @@ exports.index = (req, res) => {
 
   // To include parent resource, add _expand
   if (req.query._expand) {
-    req.query._expand.split(',').map(tableName => {
+    await req.query._expand.split(',').map(async (tableName) => {
       const expandTable = tableName.split('|');
       const singularTableName = expandTable[0];
       const foreignField = expandTable[1] ? expandTable[1] : singularTableName + 'Id';
       const pluralTableName = getPluralName(singularTableName);
       const expandSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == pluralTableName);
       if (expandSchema) {
-        // console.log('tableName expandSchema', expandSchema)
-        pipelineOperators.push(getParentLookupOperator(foreignField, singularTableName, pluralTableName, expandSchema));
+        const hasPermission = await hasReadPermission(expandSchema, Universal, null, req, res);
+        if (hasPermission) {
+          console.log('tableName expandSchema', expandSchema.apiRoute)
+          pipelineOperators.push(getParentLookupOperator(foreignField, singularTableName, pluralTableName, expandSchema));
 
-        pipelineOperators.push({ $unwind: { path: "$" + singularTableName, "preserveNullAndEmptyArrays": true } });
+          pipelineOperators.push({ $unwind: { path: "$" + singularTableName, "preserveNullAndEmptyArrays": true } });
+        } else {
+          console.log('No read permission for expandSchema ', expandSchema.apiRoute)
+        }
+
       } else {
         console.log('tableName schema not defined', singularTableName, pluralTableName)
       }
-
     })
+    // console.log('pipelineOperators after req.query._expand', pipelineOperators);
   }
 
   // test nested query, not working
@@ -514,7 +535,13 @@ exports.show = async (req, res) => {
   }
 
   const Universal = getUniversalDb(req, res);
-  // let query = await Universal.findById(id);
+
+  // check if it's set only the owner can view the list
+  const hasPermission = await hasReadPermission(apiSchema, Universal, id, req, res);
+  if (!hasPermission) {
+    res.status(401).send({ message: " No read permission" });
+    return false;
+  }
 
   let pipelineOperators = [
     {
@@ -524,11 +551,18 @@ exports.show = async (req, res) => {
 
   // To include children resources, add _embed
   if (req.query._embed) {
-    req.query._embed.split(',').map(tableName => {
+    await req.query._embed.split(',').map(async (tableName) => {
       const embedSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == tableName);;
       if (embedSchema) {
-        // console.log('tableName embedSchema', embedSchema)
-        pipelineOperators.push(getChildrenLookupOperator(id, tableName, apiSchema, embedSchema));
+        // check embedSchema permission as well
+        const hasPermission = await hasReadPermission(embedSchema, Universal, id, req, res);
+        if (hasPermission) {
+          // console.log('tableName embedSchema', embedSchema)
+          pipelineOperators.push(getChildrenLookupOperator(id, tableName, apiSchema, embedSchema));
+        } else {
+          // ignore the embed schema
+          console.log('No read permission for embed schema ' + embedSchema.apiRoute + '');
+        }
       } else {
         console.log('tableName schema not defined', tableName)
       }
@@ -538,17 +572,25 @@ exports.show = async (req, res) => {
 
   // To include parent resource, add _expand
   if (req.query._expand) {
-    req.query._expand.split(',').map(tableName => {
+    awaitreq.query._expand.split(',').map(async tableName => {
       const expandTable = tableName.split('|');
       const singularTableName = expandTable[0];
       const foreignField = expandTable[1] ? expandTable[1] : singularTableName + 'Id';
       const pluralTableName = getPluralName(singularTableName);
       const expandSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == pluralTableName);
       if (expandSchema) {
-        // console.log('tableName expandSchema', expandSchema)
-        pipelineOperators.push(getParentLookupOperator(foreignField, singularTableName, pluralTableName, expandSchema));
+        // check embedSchema permission as well
+        const hasPermission = await hasReadPermission(expandSchema, Universal, id, req, res);
+        if (hasPermission) {
+          // console.log('tableName expandSchema', expandSchema)
+          pipelineOperators.push(getParentLookupOperator(foreignField, singularTableName, pluralTableName, expandSchema));
 
-        pipelineOperators.push({ $unwind: { path: "$" + singularTableName, "preserveNullAndEmptyArrays": true } });
+          pipelineOperators.push({ $unwind: { path: "$" + singularTableName, "preserveNullAndEmptyArrays": true } });
+        } else {
+          // ignore the expand schema
+          console.log('No read permission for expand schema ' + expandSchema.apiRoute + '');
+        }
+
       } else {
         console.log('tableName schema not defined', singularTableName, pluralTableName)
       }
@@ -579,39 +621,72 @@ exports.show = async (req, res) => {
 };
 
 const verifyUserPermission = async (Universal, id, req, res) => {
-  if (API_CONFIG.ENABLE_AUTH) {
-    if (!req.currentUser) {
+  if (!API_CONFIG.ENABLE_AUTH) {
+    return true;
+  }
+  if (!req.currentUser) {
+    res.status(401).send({
+      message: `Please login first, no currentUser!!`,
+    });
+  }
+  if (req.currentUser.role && req.currentUser.role.toLowerCase().indexOf('admin') != -1) {
+    // currentUser is admin
+    console.log('=====currentUser is admin', req.currentUser.firstName);
+  } else {
+    // normal user, must be owner itself
+
+    const existItem = id ? await Universal.findById(id) : req.body;
+    if (!id) {
+      console.log('======no id, add new item, check auth:', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME]);
+    }
+    if (!existItem) {
       res.status(401).send({
-        message: `Please login first, no currentUser!!`,
+        message: `Item not exists`,
       });
+    }
+    // hasOwnProperty return false if field not defined in api.config.js
+    if ((existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME) || existItem[API_CONFIG.USER_ID_NAME]) && req.currentUser.id != existItem[API_CONFIG.USER_ID_NAME]) {
+
+      res.status(401).send({
+        message: "It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.USER_ID_NAME]),
+      });
+      return false;
+    }
+    console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME], existItem, existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME));
+  }
+
+}
+
+const hasReadPermission = async (apiSchema, Universal, id, req, res) => {
+  let hasPermission = false;
+  if (apiSchema.readRules && apiSchema.readRules.checkAuth && apiSchema.readRules.checkOwner) {
+    if (!req.currentUser) {
+      console.log('=====hasReadPermission, NO req.currentUser for', apiSchema.apiRoute);
+      return false;
     }
     if (req.currentUser.role && req.currentUser.role.toLowerCase().indexOf('admin') != -1) {
       // currentUser is admin
-      console.log('=====currentUser is admin', req.currentUser.firstName);
+      console.log('=====hasReadPermission, currentUser is admin', req.currentUser.firstName);
+      hasPermission = true;
     } else {
       // normal user, must be owner itself
+      if (apiSchema.schema.hasOwnProperty(API_CONFIG.USER_ID_NAME)) {
+        const existItem = id ? await Universal.findById(id) : req.body;
+        if (existItem[API_CONFIG.USER_ID_NAME] && req.currentUser.id == existItem[API_CONFIG.USER_ID_NAME]) {
+          console.log('=====hasReadPermission, passed, currentUser is the owner');
+          hasPermission = true;
+        }
+      } else {
+        // property not defined in schema(api.config.js)
+        hasPermission = false;
+      }
 
-      const existItem = id ? await Universal.findById(id) : req.body;
-      if (!id) {
-        console.log('======no id, add new item, check auth:', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME]);
-      }
-      if (!existItem) {
-        res.status(401).send({
-          message: `Item not exists`,
-        });
-      }
-      // hasOwnProperty return false if field not defined in api.config.js
-      if ((existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME) || existItem[API_CONFIG.USER_ID_NAME]) && req.currentUser.id != existItem[API_CONFIG.USER_ID_NAME]) {
-
-        res.status(401).send({
-          message: "It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.USER_ID_NAME]),
-        });
-        return false;
-      }
-      console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME], existItem, existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME));
     }
+  } else {
+    console.log('=====hasReadPermission,passed, no need to check owner for ', apiSchema.apiRoute);
+    hasPermission = true;
   }
-  return true;
+  return hasPermission;
 }
 
 // Update a Universal by the id in the request

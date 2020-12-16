@@ -133,6 +133,27 @@ DELETE http://localhost:8080/api/test1/<id>
 - \_expand=user,file|mainImageId means get parent data from parent table users and files. it will use userId and fileId as the foreign key by default unless you set it by table|foreignKey. e.g. file|mainImageId, file is the singular table name and mainImageId is the foreignKey
 - Only support the detail route at this moment, will add to the list route
 
+## User auth check system (check if the user is the owner or admin via JWT access token)
+
+- ENABLE_AUTH: enable user auth check system or not
+- ENABLE_AUTH=true, all edit/delete/add(update/destroy/create) has to be the owner or admin
+- ENABLE_AUTH=false, test & debug mode, everyone can view/edit/delete
+- e.g. module.exports.ENABLE_AUTH = true;
+
+- USER_ROUTE: user table api endpoint route
+- e.g. module.exports.USER_ROUTE = 'users';
+
+- USER_ID_NAME: the foreign key id in other tables to user id
+- e.g. module.exports.USER_ID_NAME = 'userId';
+
+- by default all GET request no need check user auth
+- if we want enable auth check for a table/collection list/show GET request
+- set readRules for each table/collection like below
+- "readRules": { "checkAuth": true, "checkOwner": false }
+
+- Who is admin? Set role field in users table to admin or xxxAdmin (any role value contains string "admin" will consider is an admin role)
+- e.g. role=webAdmin, role=admin, role=SuperAdmin, role=Dashboard Admin
+
 ## Debug locally
 
 - npm install universal-mean-api
