@@ -137,7 +137,8 @@ module.exports.API_SCHEMAS = [
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name", "content"],
-        "writeRule": { "isOwner": true },
+        "writeRules": { "isOwner": true },
+        "readRules": { "checkAuth": true, "isOwner": true },
         "aggregatePipeline": [
             {
                 "$addFields":
