@@ -85,7 +85,7 @@ universal = require("../controllers/universal.controller");
 
 // user auth routes
 if (API_CONFIG.ENABLE_AUTH && API_CONFIG.USER_ROUTE) {
-    app.get("/" + API_CONFIG.API_BASE + API_CONFIG.USER_ROUTE + "/getUserToken", (req, res, next) => {
+    app.post("/" + API_CONFIG.API_BASE + API_CONFIG.USER_ROUTE + "/getUserToken", (req, res, next) => {
         universal.getUserToken(req, res, next);
     });
 
