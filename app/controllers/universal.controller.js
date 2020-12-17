@@ -850,24 +850,43 @@ exports.search = (req, res) => {
 
 // user token, todo: security
 exports.getUserToken = async (req, res) => {
-  let validPassword = true;
-  if (!validPassword) {
-    return res.status(400).json({ error: "Password is wrong" });
+
+  if (!req.query.firebaseIdToken && !req.query.awsIdToken) {
+    return res.status(400).json({ error: "Missing params for getUserToken" });
+  }
+
+  let findCondition = {};
+
+  if (req.query.firebaseIdToken) {
+
+    const decodedToken = await decodeFirebaseIdToken(req.query.firebaseIdToken);
+    console.log('decodedToken decodedToken ', decodedToken);
+    if (!decodedToken) {
+      return res.status(401).json({ error: "Wrong firebaseIdToken" });
+    }
+    if (!decodedToken.uid || decodedToken.uid != req.query.firebaseUid) {
+      return res.status(401).json({ error: "firebaseUid not match firebaseIdToken" });
+    }
+    findCondition.firebaseUid = decodedToken.uid;
   }
 
   const Universal = getUniversalDb(req, res);
 
-  if (!req.query.email) {
-    return res.status(400).json({ error: "no email" });
-  }
+  // if (!req.query.email) {
+  //   return res.status(400).json({ error: "no email" });
+  // }
   req.query._responseType = 'returnData';
   // return this.index(req, res);
   // const returnData = this.index(req, res);
 
 
 
-  const userData = await Universal.findOne({ email: req.query.email }).exec();
+  const userData = await Universal.findOne(findCondition).exec();
   console.log('_responseType userData', userData);
+  if (!userData) {
+    console.log('No such user findCondition', findCondition);
+    return res.status(401).json({ error: "No such user" });
+  }
 
   let userProfile = {
     id: userData._id ? userData._id : userData.id,
@@ -887,4 +906,43 @@ exports.getUserToken = async (req, res) => {
   res.send(userProfile);
   // res.set("x-total-count", data.length);
   // res.send(data);
+}
+
+
+const decodeFirebaseIdToken = async (firebaseIdToken) => {
+  const firebaseAdmin = require("firebase-admin");
+  if (!firebaseIdToken || firebaseIdToken.length < 250 || !API_CONFIG.FIREBASE_DB_URL || !API_CONFIG.FIREBASE_SDK_KEY || !API_CONFIG.FIREBASE_SDK_KEY.hasOwnProperty('private_key')) {
+    return false;
+  }
+  // !admin.apps.length ? admin.initializeApp() : admin.app();
+  if (firebaseAdmin.apps.length == 0) {
+    firebaseAdmin.initializeApp({
+      credential: firebaseAdmin.credential.cert(API_CONFIG.FIREBASE_SDK_KEY),
+      databaseURL: API_CONFIG.FIREBASE_DB_URL
+    });
+  } else {
+    firebaseAdmin.app();
+  }
+
+  try {
+    const decodedToken = await firebaseAdmin
+      .auth()
+      .verifyIdToken(firebaseIdToken);
+    // .then((decodedToken) => {
+    //   const uid = decodedToken.uid;
+    //   console.log('firebaseIdToken decodedToken1 = ', decodedToken);
+    //   return false;
+    // })
+    // .catch((error) => {
+    //   // Handle error
+    //   console.log('firebaseIdToken decodedToken error = ', error);
+    // });
+
+    // console.log('firebaseIdToken decodedToken2 = ', decodedToken);
+    return decodedToken;
+  } catch (err) {
+    console.log('decodedToken error = ', err.message);
+    return false;
+  }
+
 }

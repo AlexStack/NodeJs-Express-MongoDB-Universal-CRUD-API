@@ -337,3 +337,17 @@ module.exports.USER_ROUTE = 'users';
 
 // the foreign key id in other tables to user id
 module.exports.USER_ID_NAME = 'userId';
+
+module.exports.FIREBASE_DB_URL = 'https://pet-story-react.firebaseio.com';
+module.exports.FIREBASE_SDK_KEY = {
+    "type": "service_account",
+    "project_id": "pet-story-react",
+    "private_key_id": "ed900053feddcb6e4542ed44e1807dfb5c328156",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCYTQsgkkAeoCP3\najRrE5hIvTGFQMSzRbUAIUTUD6ZCaqv/oaeivshf9Qple5I86vqMes/k/VMz3Hcp\nvJE6tP+O8d+MVSAIevm0eKzK0p5me8AZbnEpRpWB3JDAbk97SboHwWDdZxSJ3g0L\nuLRx09/MmOaeyG2BwQWD4c77mpTBWTfQd4d5S52ExP2teDrUe2FNPcoYBzqmuhER\nTJx25VxsQMyciCodO4CMYuUG96sbBEtazREOuPiAmFbkMW7voMZI41w0QrFnVUKN\nIphzF57ZhtIe1PmX0pPpmNJhrtJ9fzyuAECy84G4HOx5vJyJEu7YT/SWh4aw3rIv\nLjCUC32zAgMBAAECggEABafUF56MC6xuCXxZJqIbT+rZUZXJItBzheYLtJrsKp/k\nHoxgjuuUwfN13Qo3W6nCKhX5bbXL3Ct+BVUU84rQc/zJYgsF3dVrO7zAyztXryiT\nRp5890fBZN7Nmp0TYy78CIOxgXyYHP0w8NQoEeizRoQQXv8ZtJgis0tfBfrZ4UrM\ngtf9QFAPK9bDxglSoV25TZF/y6QSWc2CHbc0+ojoE6Fv+UD686/efX3XShyY7bBo\nbyLt8l3GRhsCM7M0vkWntEBKS9th+K8Dz7y4bPZ/Ty3l2aGDOIeJHkX4rHWatYA5\nO4Wv/pIXh5TA0PQbzeWWsSzLSWO9c5KWvpkMviDZUQKBgQDPOlvAzfyuIPNMeDtt\n4LDGPaC4vMmxa0mngnQaZ1H7x4bZVvfiyvDM0elWldmjQIPu5iY+tWFJS1RnL4X8\nSpeDo8i2yXOc2pEQFWqz6QNGrVlzRlFTVzFfZj5KolM3WNobpkP07+bVqpEH/jIE\nNpZezw+4/nhS2YzvoJBcdUoGywKBgQC8JUqBhuErf/JpjwaFoWO6hHdw9dmj9sOg\ng6lYL9irTsQpDo2ygta6UUizXnC05dOf3GbkTji52FEffj42fsZcfypv9vUJiGuB\nCVEjlQcG0uIe53LDqp4oFekR2mXTsJdghbFWOANMrdPxEPSnMEsPlm+yDgu/d4Vp\nFwkxXu4fuQKBgDAmo0M9mcTsKxxNo6F4YBrwHvROCZ+MCmU9zrSD5WzXg+Hkb1zn\nQuSUsd9ImnVwfDd6itBvXNenBUmkpUFmI6aW3AB89rwvnR1bnJuJPRWjGfHLGQKA\ndBxyqW62IRfvMV7TV18Gj2B+bYyp5/1Koc4N1t1pY5P8sN7NND4HktfZAoGBAJiq\nQaycf3VGmrLgpVAlRsD/39M/ClyrTM2gR/cQy+UlQrJ15rBkzkvczPsOtLF0k6Vx\nt+OlPQ4/4oOFcoHRmK9RWGQFpYsYsPLBVp9iu5Lj5ytgbpUqiq7IKJid+GYvMoXV\ntbHaPYMowYMoWPyYiS+ayANYtlukZhKB6Kmw99OxAoGADEAEQTkY/zNB6DmSkIfX\noNj9Aj8j3LLpzGuQBA90dpJvOhscABKsq+PxNCuRFdFSIkXfZ7AwNGm4WyoZF5a5\nzyjfiW2qL+SdFIOJRhZW28RR+VLGyp/ckHpvdK5s74yvVPBw8dn+SMJZhmAv0+CE\nORaXx8imeL1Xxaop6VEPxJo=\n-----END PRIVATE KEY-----\n",
+    "client_email": "firebase-adminsdk-19l33@pet-story-react.iam.gserviceaccount.com",
+    "client_id": "101941843025319779446",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-19l33%40pet-story-react.iam.gserviceaccount.com"
+}
