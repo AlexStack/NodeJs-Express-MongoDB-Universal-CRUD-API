@@ -27,7 +27,7 @@ const getApiSchema = (req, res) => {
 exports.store = async (req, res) => {
   const apiSchema = getApiSchema(req, res);
   const Universal = getUniversalDb(req, res);
-  if (apiSchema.writeRules && apiSchema.writeRules.ignoreCreateAuth && !req.body[API_CONFIG.USER_ID_NAME]) {
+  if (apiSchema.writeRules && apiSchema.writeRules.ignoreCreateAuth && !req.body[API_CONFIG.FIELD_USER_ID]) {
     // ignore auth check, allow create item anonymous. e.g. contact us form
   } else {
     const hasPermission = await hasWritePermission(apiSchema, Universal, null, req, res);
@@ -285,11 +285,15 @@ exports.index = async (req, res) => {
   }
 
   // check if it's set only the owner can view the list
-  const hasPermission = await hasReadPermission(apiSchema, Universal, null, req, res);
+  const hasPermission = hasReadPermission(apiSchema, Universal, req.body, req, res);
   if (!hasPermission) {
-    condition[API_CONFIG.USER_ID_NAME] = req.currentUser.id;
+    condition[API_CONFIG.FIELD_USER_ID] = req.currentUser.id;
   }
 
+  // check if the schema hasPrivateConstraint
+  if (hasPrivateConstraint(apiSchema, condition, req, res)) {
+    condition[API_CONFIG.FIELD_PUBLIC] = true;
+  }
 
   console.log('find query condition:', condition);
 
@@ -334,7 +338,7 @@ exports.index = async (req, res) => {
     await req.query._embed.split(',').map(async (tableName) => {
       const embedSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == tableName);;
       if (embedSchema) {
-        const hasPermission = await hasReadPermission(embedSchema, Universal, null, req, res);
+        const hasPermission = hasReadPermission(embedSchema, Universal, req.body, req, res);
         if (hasPermission) {
           console.log('tableName embedSchema', embedSchema)
           pipelineOperators.push(getChildrenLookupOperator(null, tableName, apiSchema, embedSchema));
@@ -357,7 +361,7 @@ exports.index = async (req, res) => {
       const pluralTableName = getPluralName(singularTableName);
       const expandSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == pluralTableName);
       if (expandSchema) {
-        const hasPermission = await hasReadPermission(expandSchema, Universal, null, req, res);
+        const hasPermission = hasReadPermission(expandSchema, Universal, req.body, req, res);
         if (hasPermission) {
           console.log('tableName expandSchema', expandSchema.apiRoute)
           pipelineOperators.push(getParentLookupOperator(foreignField, singularTableName, pluralTableName, expandSchema));
@@ -544,11 +548,18 @@ exports.show = async (req, res) => {
   const Universal = getUniversalDb(req, res);
 
   // check if it's set only the owner can view the list
-  const hasPermission = await hasReadPermission(apiSchema, Universal, id, req, res);
+  const existItem = await Universal.findById(id);
+  const hasPermission = hasReadPermission(apiSchema, Universal, existItem, req, res);
   if (!hasPermission) {
     res.status(401).send({ message: " No read permission for " + req.currentUser.id });
     return false;
   }
+
+    // check if the schema hasPrivateConstraint
+    if (hasPrivateConstraint(apiSchema, existItem, req, res)) {
+      res.status(401).send({ message: " This item is private"});
+      return false;
+    }
 
   let pipelineOperators = [
     {
@@ -562,7 +573,7 @@ exports.show = async (req, res) => {
       const embedSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == tableName);;
       if (embedSchema) {
         // check embedSchema permission as well
-        const hasPermission = await hasReadPermission(embedSchema, Universal, id, req, res);
+        const hasPermission = hasReadPermission(embedSchema, Universal, existItem, req, res);
         if (hasPermission) {
           // console.log('tableName embedSchema', embedSchema)
           pipelineOperators.push(getChildrenLookupOperator(id, tableName, apiSchema, embedSchema));
@@ -587,7 +598,7 @@ exports.show = async (req, res) => {
       const expandSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == pluralTableName);
       if (expandSchema) {
         // check embedSchema permission as well
-        const hasPermission = await hasReadPermission(expandSchema, Universal, id, req, res);
+        const hasPermission = hasReadPermission(expandSchema, Universal, existItem, req, res);
         if (hasPermission) {
           // console.log('tableName expandSchema', expandSchema)
           pipelineOperators.push(getParentLookupOperator(foreignField, singularTableName, pluralTableName, expandSchema));
@@ -644,7 +655,7 @@ exports.show = async (req, res) => {
 
 //     const existItem = id ? await Universal.findById(id) : req.body;
 //     if (!id) {
-//       console.log('======no id, add new item, check auth:', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME]);
+//       console.log('======no id, add new item, check auth:', req.currentUser.id, existItem[API_CONFIG.FIELD_USER_ID]);
 //     }
 //     if (!existItem) {
 //       res.status(401).send({
@@ -652,14 +663,14 @@ exports.show = async (req, res) => {
 //       });
 //     }
 //     // hasOwnProperty return false if userId not defined in api.config.js
-//     if ((existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME) || existItem[API_CONFIG.USER_ID_NAME]) && req.currentUser.id != existItem[API_CONFIG.USER_ID_NAME]) {
+//     if ((existItem.hasOwnProperty(API_CONFIG.FIELD_USER_ID) || existItem[API_CONFIG.FIELD_USER_ID]) && req.currentUser.id != existItem[API_CONFIG.FIELD_USER_ID]) {
 
 //       res.status(401).send({
-//         message: "It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.USER_ID_NAME]),
+//         message: "It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.FIELD_USER_ID]),
 //       });
 //       return false;
 //     }
-//     console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME], existItem, existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME));
+//     console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.FIELD_USER_ID], existItem, existItem.hasOwnProperty(API_CONFIG.FIELD_USER_ID));
 //     return true;
 //   }
 
@@ -685,27 +696,27 @@ const hasWritePermission = async (apiSchema, Universal, id, req, res) => {
     // normal user, must be owner itself
     const existItem = id ? await Universal.findById(id) : req.body;
     if (!id) {
-      console.log('======no id, add new item, check auth:', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME]);
+      console.log('======no id, add new item, check auth:', req.currentUser.id, existItem[API_CONFIG.FIELD_USER_ID]);
       // if no id, refactor the formData(req.body) with req.currentUser.id
-      existItem[API_CONFIG.USER_ID_NAME] = req.currentUser.id;
+      existItem[API_CONFIG.FIELD_USER_ID] = req.currentUser.id;
     }
     if (!existItem) {
       console.log(`Item not exists`);
       return false;
     }
     // hasOwnProperty return false if userId not defined in api.config.js
-    if ((existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME) || existItem[API_CONFIG.USER_ID_NAME]) && req.currentUser.id != existItem[API_CONFIG.USER_ID_NAME]) {
-      console.log("It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.USER_ID_NAME]));
+    if ((existItem.hasOwnProperty(API_CONFIG.FIELD_USER_ID) || existItem[API_CONFIG.FIELD_USER_ID]) && req.currentUser.id != existItem[API_CONFIG.FIELD_USER_ID]) {
+      console.log("It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.FIELD_USER_ID]));
       return false;
     }
-    console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME], existItem, existItem.hasOwnProperty(API_CONFIG.USER_ID_NAME));
+    console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.FIELD_USER_ID], existItem, existItem.hasOwnProperty(API_CONFIG.FIELD_USER_ID));
 
     return true;
   }
 
 }
 
-const hasReadPermission = async (apiSchema, Universal, id, req, res) => {
+const hasReadPermission =  (apiSchema, Universal, existItem, req, res) => {
   let hasPermission = false;
   if (apiSchema.readRules && apiSchema.readRules.checkAuth && apiSchema.readRules.checkOwner) {
     if (!req.currentUser) {
@@ -718,14 +729,14 @@ const hasReadPermission = async (apiSchema, Universal, id, req, res) => {
       hasPermission = true;
     } else {
       // normal user, must be owner itself
-      if (apiSchema.schema.hasOwnProperty(API_CONFIG.USER_ID_NAME)) {
-        const existItem = id ? await Universal.findById(id) : req.body;
-        if (existItem && existItem[API_CONFIG.USER_ID_NAME] && req.currentUser.id == existItem[API_CONFIG.USER_ID_NAME]) {
+      if (apiSchema.schema.hasOwnProperty(API_CONFIG.FIELD_USER_ID)) {
+        // const existItem = itemData === null ? req.body : itemData;
+        if (existItem && existItem[API_CONFIG.FIELD_USER_ID] && req.currentUser.id == existItem[API_CONFIG.FIELD_USER_ID]) {
           console.log('=====hasReadPermission, passed, currentUser is the owner');
           hasPermission = true;
         }
-        if (id && !existItem) {
-          console.log('=====hasReadPermission, item not find: ' + id);
+        if (!existItem) {
+          console.log('=====hasReadPermission, item not find ');
         }
       } else {
         // property not defined in schema(api.config.js)
@@ -739,6 +750,28 @@ const hasReadPermission = async (apiSchema, Universal, id, req, res) => {
   }
   return hasPermission;
 }
+
+const hasPrivateConstraint = (apiSchema, existItem,req,res) =>{
+    // check if the schema has isPublic field
+    let hasPrivateConstraint = false;
+    if ( apiSchema.schema.hasOwnProperty(API_CONFIG.FIELD_PUBLIC) ){
+      if (!req.currentUser){
+        console.log('hasPrivateConstraint: no req.currentUser');
+        hasPrivateConstraint = true;
+      } else {
+        if ( req.currentUser.role && req.currentUser.role.toLowerCase().indexOf('admin') != -1 ){
+          // is admin
+        } else if ( existItem[API_CONFIG.FIELD_USER_ID] && existItem[API_CONFIG.FIELD_USER_ID] == req.currentUser.id ){
+          // is owner
+        } else if ( existItem[API_CONFIG.FIELD_TARGET_USER_ID] && existItem[API_CONFIG.FIELD_TARGET_USER_ID] == req.currentUser.id ){
+          // is target user, e.g. the user who receive a comment/message/reply
+        }  else {
+          hasPrivateConstraint = true;
+        }
+      }
+    }
+    return hasPrivateConstraint;
+  };
 
 // Update a Universal by the id in the request
 exports.update = async (req, res) => {

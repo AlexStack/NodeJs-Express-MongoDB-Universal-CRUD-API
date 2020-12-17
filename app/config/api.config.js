@@ -161,7 +161,7 @@ module.exports.API_SCHEMAS = [
             content: String,
             species: String,
             tags: String,
-            public: Boolean,
+            // isPublic: Boolean,
             priority: Number,
             editorChoice: Number,
             petId: String,
@@ -251,6 +251,7 @@ module.exports.API_SCHEMAS = [
             parentId: String,
             priority: Number,
             editorChoice: Number,
+            isPublic: Boolean,
             storyId: String,
             petId: String,
             ownerId: String,
@@ -337,8 +338,10 @@ module.exports.ENABLE_AUTH = true;
 // user table api endpoint route
 module.exports.USER_ROUTE = 'users';
 
-// the foreign key id in other tables to user id
-module.exports.USER_ID_NAME = 'userId';
+// the foreign key id field in other tables refers to user id
+module.exports.FIELD_USER_ID = 'userId';
+module.exports.FIELD_PUBLIC = 'isPublic';
+module.exports.FIELD_TARGET_USER_ID = 'ownerId';
 
 module.exports.FIREBASE_DB_URL = 'https://pet-story-react.firebaseio.com';
 module.exports.FIREBASE_SDK_KEY = {

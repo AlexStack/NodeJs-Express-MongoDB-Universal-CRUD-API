@@ -143,8 +143,8 @@ DELETE http://localhost:8080/api/test1/<id>
 - USER_ROUTE: user table api endpoint route
 - e.g. module.exports.USER_ROUTE = 'users';
 
-- USER_ID_NAME: the foreign key id in other tables to user id
-- e.g. module.exports.USER_ID_NAME = 'userId';
+- FIELD_USER_ID: the foreign key id in other tables to user id
+- e.g. module.exports.FIELD_USER_ID = 'userId';
 
 - by default all GET request no need check user auth
 - if we want enable auth check for a table/collection list/show GET request
@@ -168,6 +168,17 @@ DELETE http://localhost:8080/api/test1/<id>
 - Add "writeRules": { "ignoreCreateAuth": true } to the schema settings in api.config.js
 - NOTE: It still requires login if there is a \_POST[userId] parameter for security reason
 - edit/delete still requires owner or admin
+
+
+## How to set up a private item
+
+- Sometimes we want create item privately. e.g. something is public while others is private, or private message & public comment
+- Add "isPublic: Boolean" to the schema settings in api.config.js
+- Set FIELD_PUBLIC = 'isPublic' and FIELD_TARGET_USER_ID = 'ownerId' to fit your needs
+- The API will check if there is a isPublic field in the schema first, then check the current user or target user is match or not
+- Example 1: a story set isPublic=false, means it is private. only the owner itself can view/edit it. Other users can not event list or view it.
+- Example 2: a private message sent to userA from userB, only those two users both can view the message, however, only userB can edit/delete the message.
+
 
 ## return data - all JSON format
 
