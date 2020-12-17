@@ -25,13 +25,14 @@ const getApiSchema = (req, res) => {
 
 // Create and Save a new Universal
 exports.store = async (req, res) => {
-
+  const apiSchema = getApiSchema(req, res);
   const Universal = getUniversalDb(req, res);
-  const hasPermission = await hasWritePermission(Universal, null, req, res);
+  const hasPermission = await hasWritePermission(apiSchema, Universal, null, req, res);
   if (!hasPermission) {
     res.status(401).send({
       message: "User do not has the permission to create new item",
     });
+    return false;
   }
 
   const universal = new Universal(req.body);
@@ -661,7 +662,7 @@ exports.show = async (req, res) => {
 // }
 
 
-const hasWritePermission = async (Universal, id, req, res) => {
+const hasWritePermission = async (apiSchema, Universal, id, req, res) => {
   if (!API_CONFIG.ENABLE_AUTH) {
     return true;
   }
@@ -673,8 +674,12 @@ const hasWritePermission = async (Universal, id, req, res) => {
     console.log('=====currentUser is admin', req.currentUser.firstName);
     return true;
   } else {
-    // normal user, must be owner itself
+    // check if must be admin
+    if (apiSchema.writeRules && apiSchema.writeRules.checkAdmin) {
+      return false;
+    }
 
+    // normal user, must be owner itself
     const existItem = id ? await Universal.findById(id) : req.body;
     if (!id) {
       console.log('======no id, add new item, check auth:', req.currentUser.id, existItem[API_CONFIG.USER_ID_NAME]);
@@ -744,7 +749,7 @@ exports.update = async (req, res) => {
   const id = req.params[apiSchema.apiRoute];
   const Universal = getUniversalDb(req, res);
 
-  const hasPermission = await hasWritePermission(Universal, id, req, res);
+  const hasPermission = await hasWritePermission(apiSchema, Universal, id, req, res);
   if (!hasPermission) {
     res.status(404).send({
       message: `No permission to update item with id=${id}. currentUser: ${req.currentUser.id}`,
@@ -792,7 +797,7 @@ exports.destroy = async (req, res) => {
   const id = req.params[apiSchema.apiRoute];
   const Universal = getUniversalDb(req, res);
 
-  const hasPermission = await hasWritePermission(Universal, id, req, res);
+  const hasPermission = await hasWritePermission(apiSchema, Universal, id, req, res);
   if (!hasPermission) {
     res.status(404).send({
       message: `No permission to DELETE item with id=${id}. currentUser: ${req.currentUser.id}`,
