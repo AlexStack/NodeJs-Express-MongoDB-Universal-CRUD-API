@@ -892,20 +892,21 @@ exports.search = (req, res) => {
 // user token, todo: security
 exports.getUserToken = async (req, res) => {
 
-  if (!req.query.firebaseIdToken && !req.query.awsIdToken) {
+  if (!req.body.firebaseIdToken && !req.body.awsIdToken) {
+    console.log('getUserToken req.body',req.body,req.body)
     return res.status(400).json({ error: "Missing params for getUserToken" });
   }
 
   let findCondition = {};
 
-  if (req.query.firebaseIdToken) {
+  if (req.body.firebaseIdToken) {
 
-    const decodedToken = await decodeFirebaseIdToken(req.query.firebaseIdToken);
+    const decodedToken = await decodeFirebaseIdToken(req.body.firebaseIdToken);
     console.log('decodedToken decodedToken ', decodedToken);
     if (!decodedToken) {
       return res.status(401).json({ error: "Wrong firebaseIdToken" });
     }
-    if (!decodedToken.uid || decodedToken.uid != req.query.firebaseUid) {
+    if (!decodedToken.uid || decodedToken.uid != req.body.firebaseUid) {
       return res.status(401).json({ error: "firebaseUid not match firebaseIdToken" });
     }
     findCondition.firebaseUid = decodedToken.uid;
@@ -913,10 +914,10 @@ exports.getUserToken = async (req, res) => {
 
   const Universal = getUniversalDb(req, res);
 
-  // if (!req.query.email) {
+  // if (!req.body.email) {
   //   return res.status(400).json({ error: "no email" });
   // }
-  req.query._responseType = 'returnData';
+  req.body._responseType = 'returnData';
   // return this.index(req, res);
   // const returnData = this.index(req, res);
 
