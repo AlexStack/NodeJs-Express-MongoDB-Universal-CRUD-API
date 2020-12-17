@@ -156,6 +156,19 @@ DELETE http://localhost:8080/api/test1/<id>
 - e.g. role=webAdmin, role=admin, role=SuperAdmin, role=Dashboard Admin
 - admin has all permissions for now
 
+## How to set admin only add/edit/delete permission
+
+- add/edit/delete request allow owner itself by default
+- if you want set admin only for some system tables, e.g. settings, categories
+- Add "writeRules": { "checkAdmin": true } to the schema settings in api.config.js
+
+## How to allow create item anonymous
+
+- Sometimes we want allow create item anonymous. e.g. a contact us form
+- Add "writeRules": { "ignoreCreateAuth": true } to the schema settings in api.config.js
+- NOTE: It still requires login if there is a \_POST[userId] parameter for security reason
+- edit/delete still requires owner or admin
+
 ## return data - all JSON format
 
 - add or update request, returns the NEW item object if success

@@ -259,6 +259,7 @@ module.exports.API_SCHEMAS = [
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["title", "content"],
+        "writeRules": { "ignoreCreateAuth": true },
         "aggregatePipeline": [
             {
                 "$addFields":

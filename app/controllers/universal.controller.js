@@ -27,12 +27,16 @@ const getApiSchema = (req, res) => {
 exports.store = async (req, res) => {
   const apiSchema = getApiSchema(req, res);
   const Universal = getUniversalDb(req, res);
-  const hasPermission = await hasWritePermission(apiSchema, Universal, null, req, res);
-  if (!hasPermission) {
-    res.status(401).send({
-      message: "User do not has the permission to create new item",
-    });
-    return false;
+  if (apiSchema.writeRules && apiSchema.writeRules.ignoreCreateAuth && !req.body[API_CONFIG.USER_ID_NAME]) {
+    // ignore auth check, allow create item anonymous. e.g. contact us form
+  } else {
+    const hasPermission = await hasWritePermission(apiSchema, Universal, null, req, res);
+    if (!hasPermission) {
+      res.status(401).send({
+        message: "User do not has the permission to create new item",
+      });
+      return false;
+    }
   }
 
   const universal = new Universal(req.body);
@@ -678,7 +682,6 @@ const hasWritePermission = async (apiSchema, Universal, id, req, res) => {
     if (apiSchema.writeRules && apiSchema.writeRules.checkAdmin) {
       return false;
     }
-
     // normal user, must be owner itself
     const existItem = id ? await Universal.findById(id) : req.body;
     if (!id) {
