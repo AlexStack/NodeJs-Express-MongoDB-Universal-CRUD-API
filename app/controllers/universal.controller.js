@@ -336,12 +336,16 @@ exports.index = async (req, res) => {
   // To include children resources, add _embed
   if (req.query._embed) {
     await req.query._embed.split(',').map(async (tableName) => {
+      const embedTable = tableName.split('|');
+      const pluralTableName = embedTable[0];
+      const foreignField = embedTable[1] ? embedTable[1] : null;
+
       const embedSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == tableName);;
       if (embedSchema) {
         const hasPermission = hasReadPermission(embedSchema, Universal, req.body, req, res);
         if (hasPermission) {
           console.log('tableName embedSchema', embedSchema)
-          pipelineOperators.push(getChildrenLookupOperator(null, tableName, apiSchema, embedSchema));
+          pipelineOperators.push(getChildrenLookupOperator(null, pluralTableName, apiSchema, embedSchema, foreignField));
         } else {
           console.log('No read permission for embedSchema ', embedSchema.apiRoute);
         }
@@ -440,8 +444,8 @@ const getPluralName = (tableName) => {
   return pluralName;
 }
 
-const getChildrenLookupOperator = (id, tableName, apiSchema, embedSchema) => {
-  const foreignField = getTableId(apiSchema.collectionName);
+const getChildrenLookupOperator = (id, tableName, apiSchema, embedSchema, foreignId) => {
+  const foreignField = foreignId ? foreignId : getTableId(apiSchema.collectionName);
   let pipeline = embedSchema.aggregatePipeline ? embedSchema.aggregatePipeline : [];
   let match = {};
   if (id) {
@@ -555,11 +559,11 @@ exports.show = async (req, res) => {
     return false;
   }
 
-    // check if the schema hasPrivateConstraint
-    if (hasPrivateConstraint(apiSchema, existItem, req, res)) {
-      res.status(401).send({ message: " This item is private"});
-      return false;
-    }
+  // check if the schema hasPrivateConstraint
+  if (hasPrivateConstraint(apiSchema, existItem, req, res)) {
+    res.status(401).send({ message: " This item is private" });
+    return false;
+  }
 
   let pipelineOperators = [
     {
@@ -576,7 +580,7 @@ exports.show = async (req, res) => {
         const hasPermission = hasReadPermission(embedSchema, Universal, existItem, req, res);
         if (hasPermission) {
           // console.log('tableName embedSchema', embedSchema)
-          pipelineOperators.push(getChildrenLookupOperator(id, tableName, apiSchema, embedSchema));
+          pipelineOperators.push(getChildrenLookupOperator(id, tableName, apiSchema, embedSchema, null));
         } else {
           // ignore the embed schema
           console.log('No read permission for embed schema ' + embedSchema.apiRoute + '');
@@ -716,7 +720,7 @@ const hasWritePermission = async (apiSchema, Universal, id, req, res) => {
 
 }
 
-const hasReadPermission =  (apiSchema, Universal, existItem, req, res) => {
+const hasReadPermission = (apiSchema, Universal, existItem, req, res) => {
   let hasPermission = false;
   if (apiSchema.readRules && apiSchema.readRules.checkAuth && apiSchema.readRules.checkOwner) {
     if (!req.currentUser) {
@@ -751,27 +755,27 @@ const hasReadPermission =  (apiSchema, Universal, existItem, req, res) => {
   return hasPermission;
 }
 
-const hasPrivateConstraint = (apiSchema, existItem,req,res) =>{
-    // check if the schema has isPublic field
-    let hasPrivateConstraint = false;
-    if ( apiSchema.schema.hasOwnProperty(API_CONFIG.FIELD_PUBLIC) ){
-      if (!req.currentUser){
-        console.log('hasPrivateConstraint: no req.currentUser');
-        hasPrivateConstraint = true;
+const hasPrivateConstraint = (apiSchema, existItem, req, res) => {
+  // check if the schema has isPublic field
+  let hasPrivateConstraint = false;
+  if (apiSchema.schema.hasOwnProperty(API_CONFIG.FIELD_PUBLIC)) {
+    if (!req.currentUser) {
+      console.log('hasPrivateConstraint: no req.currentUser');
+      hasPrivateConstraint = true;
+    } else {
+      if (req.currentUser.role && req.currentUser.role.toLowerCase().indexOf('admin') != -1) {
+        // is admin
+      } else if (existItem[API_CONFIG.FIELD_USER_ID] && existItem[API_CONFIG.FIELD_USER_ID] == req.currentUser.id) {
+        // is owner
+      } else if (existItem[API_CONFIG.FIELD_TARGET_USER_ID] && existItem[API_CONFIG.FIELD_TARGET_USER_ID] == req.currentUser.id) {
+        // is target user, e.g. the user who receive a comment/message/reply
       } else {
-        if ( req.currentUser.role && req.currentUser.role.toLowerCase().indexOf('admin') != -1 ){
-          // is admin
-        } else if ( existItem[API_CONFIG.FIELD_USER_ID] && existItem[API_CONFIG.FIELD_USER_ID] == req.currentUser.id ){
-          // is owner
-        } else if ( existItem[API_CONFIG.FIELD_TARGET_USER_ID] && existItem[API_CONFIG.FIELD_TARGET_USER_ID] == req.currentUser.id ){
-          // is target user, e.g. the user who receive a comment/message/reply
-        }  else {
-          hasPrivateConstraint = true;
-        }
+        hasPrivateConstraint = true;
       }
     }
-    return hasPrivateConstraint;
-  };
+  }
+  return hasPrivateConstraint;
+};
 
 // Update a Universal by the id in the request
 exports.update = async (req, res) => {
@@ -893,7 +897,7 @@ exports.search = (req, res) => {
 exports.getUserToken = async (req, res) => {
 
   if (!req.body.firebaseIdToken && !req.body.awsIdToken) {
-    console.log('getUserToken req.body',req.body,req.body)
+    console.log('getUserToken req.body', req.body, req.body)
     return res.status(400).json({ error: "Missing params for getUserToken" });
   }
 
