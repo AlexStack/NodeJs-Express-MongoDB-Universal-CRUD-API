@@ -348,8 +348,10 @@ exports.index = async (req, res) => {
       if (embedSchema) {
         const hasPermission = hasReadPermission(embedSchema, Universal, req.body, req, res);
         if (hasPermission) {
-          // console.log('tableName embedSchema', embedSchema)
-          pipelineOperators.push(getChildrenLookupOperator(null, pluralTableName, apiSchema, embedSchema, foreignField));
+          const hasPrivate = hasPrivateConstraint(embedSchema, condition, req, res);
+
+          console.log('tableName embedSchema hasPrivate', hasPrivate)
+          pipelineOperators.push(getChildrenLookupOperator(null, pluralTableName, apiSchema, embedSchema, foreignField, hasPrivate));
         } else {
           console.log('No read permission for embedSchema ', embedSchema.apiRoute);
         }
@@ -358,7 +360,7 @@ exports.index = async (req, res) => {
         console.log('tableName schema not defined', tableName)
       }
     })
-    console.log('pipelineOperators after req.query._embed', pipelineOperators);
+    // console.log('pipelineOperators after req.query._embed', pipelineOperators);
 
   }
 
@@ -385,7 +387,7 @@ exports.index = async (req, res) => {
         console.log('tableName schema not defined', singularTableName, pluralTableName)
       }
     })
-    console.log('pipelineOperators after req.query._expand', pipelineOperators);
+    // console.log('pipelineOperators after req.query._expand', pipelineOperators);
   }
 
   // test nested query, not working
@@ -450,7 +452,7 @@ const getPluralName = (tableName) => {
   return pluralName;
 }
 
-const getChildrenLookupOperator = (id, tableName, apiSchema, embedSchema, foreignId) => {
+const getChildrenLookupOperator = (id, tableName, apiSchema, embedSchema, foreignId, hasPrivate) => {
   const foreignField = foreignId ? foreignId : getTableId(apiSchema.collectionName);
   let pipeline = embedSchema.aggregatePipeline ? embedSchema.aggregatePipeline : [];
   let match = {};
@@ -458,9 +460,13 @@ const getChildrenLookupOperator = (id, tableName, apiSchema, embedSchema, foreig
     // for show()
     match[foreignField] = id;
   } else {
-    // for index() 
     match['$expr'] = { "$eq": ["$" + foreignField, "$$strId"] };
   }
+
+  if (hasPrivate) {
+    match[API_CONFIG.FIELD_PUBLIC] = true;
+  }
+
   pipeline = [{ '$match': match }, ...pipeline];
   const lookupOperator = {
     '$lookup': {
@@ -472,7 +478,7 @@ const getChildrenLookupOperator = (id, tableName, apiSchema, embedSchema, foreig
     }
   }
   //BUG: users table(users?id=5fdbf8dc098f0a77130d4123&_embed=pets,stories,comments|ownerId)  not working, but other tables works
-  // console.log('lookupOperator pipeline.match', match);
+  console.log('lookupOperator pipeline.match', match);
   return lookupOperator;
 }
 
@@ -591,8 +597,13 @@ exports.show = async (req, res) => {
         // check embedSchema permission as well
         const hasPermission = hasReadPermission(embedSchema, Universal, existItem, req, res);
         if (hasPermission) {
-          // console.log('tableName embedSchema', embedSchema)
-          pipelineOperators.push(getChildrenLookupOperator(id, pluralTableName, apiSchema, embedSchema, foreignField));
+          let hasPrivate = hasPrivateConstraint(embedSchema, existItem, req, res);
+
+          if (hasPrivate && apiSchema.apiRoute == API_CONFIG.USER_ROUTE && req.currentUser && existItem.id == req.currentUser.id) {
+            // if is user table
+            hasPrivate = false;
+          }
+          console.log('tableName embedSchema hasPrivate', hasPrivate); pipelineOperators.push(getChildrenLookupOperator(id, pluralTableName, apiSchema, embedSchema, foreignField, hasPrivate));
         } else {
           // ignore the embed schema
           console.log('No read permission for embed schema ' + embedSchema.apiRoute + '');
