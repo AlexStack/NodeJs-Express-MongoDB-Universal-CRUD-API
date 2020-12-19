@@ -86,7 +86,7 @@ module.exports.API_SCHEMAS = [
         "apiRoute": "users",
         "collectionName": "users",
         "schema": {
-            name: String,
+
             email: {
                 type: String,
                 required: true,
@@ -103,11 +103,12 @@ module.exports.API_SCHEMAS = [
             },
             role: String,
             firstName: String,
-            lastName: String
+            lastName: String,
+            username: String,
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name"],
-        "selectFields": "-email -firebaseUid",
+        // "selectFields": "-email -firebaseUid",
         "writeRules": { "ignoreCreateAuth": true }, // allow register without check auth
         "aggregatePipeline": [
             {
@@ -116,7 +117,7 @@ module.exports.API_SCHEMAS = [
             },
             {
                 "$project":
-                    { password: 0, confirmPassword: 0, email2: 0, "pets2.createdAt": 0, __v: 0, _id: 0 }
+                    { password: 0, confirmPassword: 0, email: 0, "pets2.createdAt": 0, __v: 0, _id: 0, firebaseUid: 0, accessToken: 0 }
             }
         ]
     },
@@ -134,7 +135,7 @@ module.exports.API_SCHEMAS = [
             content: String,
             priority: Number,
             editorChoice: Number,
-            dob:Date,
+            dob: Date,
             userId: String
         },
         "mongooseOption": { timestamps: true, strict: false },

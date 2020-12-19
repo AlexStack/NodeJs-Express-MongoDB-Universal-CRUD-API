@@ -330,7 +330,11 @@ exports.index = async (req, res) => {
     },
     {
       '$limit': defaultLimit,
-    }
+    },
+    // {
+    //   "$addFields":
+    //     { id: "$_id" }
+    // }
   ];
 
   // To include children resources, add _embed
@@ -340,11 +344,11 @@ exports.index = async (req, res) => {
       const pluralTableName = embedTable[0];
       const foreignField = embedTable[1] ? embedTable[1] : null;
 
-      const embedSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == tableName);;
+      const embedSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == pluralTableName);
       if (embedSchema) {
         const hasPermission = hasReadPermission(embedSchema, Universal, req.body, req, res);
         if (hasPermission) {
-          console.log('tableName embedSchema', embedSchema)
+          // console.log('tableName embedSchema', embedSchema)
           pipelineOperators.push(getChildrenLookupOperator(null, pluralTableName, apiSchema, embedSchema, foreignField));
         } else {
           console.log('No read permission for embedSchema ', embedSchema.apiRoute);
@@ -354,6 +358,8 @@ exports.index = async (req, res) => {
         console.log('tableName schema not defined', tableName)
       }
     })
+    console.log('pipelineOperators after req.query._embed', pipelineOperators);
+
   }
 
   // To include parent resource, add _expand
@@ -379,7 +385,7 @@ exports.index = async (req, res) => {
         console.log('tableName schema not defined', singularTableName, pluralTableName)
       }
     })
-    // console.log('pipelineOperators after req.query._expand', pipelineOperators);
+    console.log('pipelineOperators after req.query._expand', pipelineOperators);
   }
 
   // test nested query, not working
@@ -459,11 +465,13 @@ const getChildrenLookupOperator = (id, tableName, apiSchema, embedSchema, foreig
   const lookupOperator = {
     '$lookup': {
       'from': tableName,
-      "let": { "strId": "$id" }, // maybe $_id in some case
+      "let": { "strId": { $ifNull: ["$id", "id-is-null"] } }, // maybe $_id in some case
+      // "let": { "strId": { $ifNull: ["$id", "$_id"] } },
       'as': tableName,
       'pipeline': pipeline
     }
   }
+  //BUG: users table(users?id=5fdbf8dc098f0a77130d4123&_embed=pets,stories,comments|ownerId)  not working, but other tables works
   // console.log('lookupOperator pipeline.match', match);
   return lookupOperator;
 }
@@ -574,13 +582,17 @@ exports.show = async (req, res) => {
   // To include children resources, add _embed
   if (req.query._embed) {
     await req.query._embed.split(',').map(async (tableName) => {
-      const embedSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == tableName);;
+      const embedTable = tableName.split('|');
+      const pluralTableName = embedTable[0];
+      const foreignField = embedTable[1] ? embedTable[1] : null;
+
+      const embedSchema = API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.collectionName == pluralTableName);;
       if (embedSchema) {
         // check embedSchema permission as well
         const hasPermission = hasReadPermission(embedSchema, Universal, existItem, req, res);
         if (hasPermission) {
           // console.log('tableName embedSchema', embedSchema)
-          pipelineOperators.push(getChildrenLookupOperator(id, tableName, apiSchema, embedSchema, null));
+          pipelineOperators.push(getChildrenLookupOperator(id, pluralTableName, apiSchema, embedSchema, foreignField));
         } else {
           // ignore the embed schema
           console.log('No read permission for embed schema ' + embedSchema.apiRoute + '');
@@ -594,7 +606,7 @@ exports.show = async (req, res) => {
 
   // To include parent resource, add _expand
   if (req.query._expand) {
-    awaitreq.query._expand.split(',').map(async tableName => {
+    await req.query._expand.split(',').map(async tableName => {
       const expandTable = tableName.split('|');
       const singularTableName = expandTable[0];
       const foreignField = expandTable[1] ? expandTable[1] : singularTableName + 'Id';
