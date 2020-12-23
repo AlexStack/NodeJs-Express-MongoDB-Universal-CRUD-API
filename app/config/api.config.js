@@ -105,6 +105,9 @@ module.exports.API_SCHEMAS = [
             firstName: String,
             lastName: String,
             username: String,
+            viewNum: Number,
+            likeNum: Number,
+            commentNum: Number,
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name"],
@@ -135,12 +138,15 @@ module.exports.API_SCHEMAS = [
             content: String,
             priority: Number,
             editorChoice: Number,
+            viewNum: Number,
+            likeNum: Number,
+            commentNum: Number,
             dob: Date,
             userId: String
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name", "content"],
-        // "writeRules": { "checkOwner": true },
+        "writeRules": { "selfUpdateFields": ["viewNum", "likeNum", "commentNum"] },
         // "readRules": { "checkAuth": true, "checkOwner": false },
         "aggregatePipeline": [
             {
@@ -167,12 +173,16 @@ module.exports.API_SCHEMAS = [
             // isPublic: Boolean,
             priority: Number,
             editorChoice: Number,
+            viewNum: Number,
+            likeNum: Number,
+            commentNum: Number,
             petId: String,
             userId: String
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["title", "content", "tags"],
         // "readRules": { "checkAuth": true, "checkOwner": false },
+        "writeRules": { "selfUpdateFields": ["viewNum", "likeNum", "commentNum"] },
         "aggregatePipeline": [
             {
                 "$addFields":

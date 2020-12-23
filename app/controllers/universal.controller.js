@@ -665,45 +665,6 @@ exports.show = async (req, res) => {
   return query;
 };
 
-// const verifyUserPermission = async (Universal, id, req, res) => {
-//   if (!API_CONFIG.ENABLE_AUTH) {
-//     return true;
-//   }
-//   if (!req.currentUser) {
-//     res.status(401).send({
-//       message: `Please login first, no currentUser!!`,
-//     });
-//   }
-//   if (req.currentUser.role && req.currentUser.role.toLowerCase().indexOf('admin') != -1) {
-//     // currentUser is admin
-//     console.log('=====currentUser is admin', req.currentUser.firstName);
-//   } else {
-//     // normal user, must be owner itself
-
-//     const existItem = id ? await Universal.findById(id) : req.body;
-//     if (!id) {
-//       console.log('======no id, add new item, check auth:', req.currentUser.id, existItem[API_CONFIG.FIELD_USER_ID]);
-//     }
-//     if (!existItem) {
-//       res.status(401).send({
-//         message: `Item not exists`,
-//       });
-//     }
-//     // hasOwnProperty return false if userId not defined in api.config.js
-//     if ((existItem.hasOwnProperty(API_CONFIG.FIELD_USER_ID) || existItem[API_CONFIG.FIELD_USER_ID]) && req.currentUser.id != existItem[API_CONFIG.FIELD_USER_ID]) {
-
-//       res.status(401).send({
-//         message: "It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.FIELD_USER_ID]),
-//       });
-//       return false;
-//     }
-//     console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.FIELD_USER_ID], existItem, existItem.hasOwnProperty(API_CONFIG.FIELD_USER_ID));
-//     return true;
-//   }
-
-// }
-
-
 const hasWritePermission = async (apiSchema, Universal, id, req, res) => {
   if (!API_CONFIG.ENABLE_AUTH) {
     return true;
@@ -731,12 +692,46 @@ const hasWritePermission = async (apiSchema, Universal, id, req, res) => {
       console.log(`Item not exists`);
       return false;
     }
+
+    // if is update, check if all req.body fields are selfUpdateFields
+    if (id && apiSchema.writeRules && apiSchema.writeRules.selfUpdateFields && apiSchema.writeRules.selfUpdateFields.length > 0) {
+      let checkPoint = null; // not selfUpdateFields
+      const fields = apiSchema.writeRules.selfUpdateFields;
+
+      for (const [pName, pValue] of Object.entries(req.body)) {
+        if (fields.includes(pName)) {
+          if (!existItem[pName]) {
+            if (parseInt(pValue) != 1 || parseInt(pValue) != 0) {
+              checkPoint = false;
+              break;
+            } else {
+              checkPoint = true;
+            }
+          } else if (Math.abs(parseInt(existItem[pName]) - parseInt(pValue)) > 1) {
+            checkPoint = false;
+            break;
+          } else {
+            checkPoint = true;
+          }
+        }
+      }
+      console.log('------selfUpdateFields checkPoint', checkPoint)
+      if (checkPoint) {
+        return true; // pass all check points
+      }
+      if (checkPoint === false) {
+        // only === false means has invalid selfUpdateFields, NOT ===null
+        // even owner itself can not change selfUpdateFields with step>1
+        return false;
+      }
+    }
+
     // hasOwnProperty return false if userId not defined in api.config.js
-    if ((existItem.hasOwnProperty(API_CONFIG.FIELD_USER_ID) || existItem[API_CONFIG.FIELD_USER_ID]) && req.currentUser.id != existItem[API_CONFIG.FIELD_USER_ID]) {
+    if ((apiSchema.schema.hasOwnProperty(API_CONFIG.FIELD_USER_ID) || existItem[API_CONFIG.FIELD_USER_ID]) && req.currentUser.id != existItem[API_CONFIG.FIELD_USER_ID]) {
       console.log("It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.FIELD_USER_ID]));
       return false;
     }
-    console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.FIELD_USER_ID], existItem, existItem.hasOwnProperty(API_CONFIG.FIELD_USER_ID));
+    console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.FIELD_USER_ID], apiSchema.schema.hasOwnProperty(API_CONFIG.FIELD_USER_ID), existItem);
 
     return true;
   }
@@ -814,7 +809,7 @@ exports.update = async (req, res) => {
 
   const hasPermission = await hasWritePermission(apiSchema, Universal, id, req, res);
   if (!hasPermission) {
-    res.status(404).send({
+    res.status(401).send({
       message: `No permission to update item with id=${id}. currentUser: ${req.currentUser.id}`,
     });
     return false;

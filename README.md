@@ -169,7 +169,6 @@ DELETE http://localhost:8080/api/test1/<id>
 - NOTE: It still requires login if there is a \_POST[userId] parameter for security reason
 - edit/delete still requires owner or admin
 
-
 ## How to set up a private item
 
 - Sometimes we want create item privately. e.g. something is public while others is private, or private message & public comment
@@ -179,6 +178,11 @@ DELETE http://localhost:8080/api/test1/<id>
 - Example 1: a story set isPublic=false, means it is private. only the owner itself can view/edit it. Other users can not event list or view it.
 - Example 2: a private message sent to userA from userB, only those two users both can view the message, however, only userB can edit/delete the message.
 
+## How to update some fields anonymous
+
+- selfUpdateFields only allow 1 increase/decrease self update unless use is admin
+- "writeRules": { "selfUpdateFields": ["viewNum", "likeNum", "commentNum"] }
+- Note: selfUpdateFields will exclude from owner itself update
 
 ## return data - all JSON format
 
