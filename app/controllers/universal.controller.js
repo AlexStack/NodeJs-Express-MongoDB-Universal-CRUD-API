@@ -735,6 +735,11 @@ const hasWritePermission = async (apiSchema, Universal, id, req, res) => {
       console.log("It not your item, CAN NOT UPDATE ITEM WITH ID " + (id || existItem[API_CONFIG.FIELD_USER_ID]));
       return false;
     }
+    // if it's user table
+    if (apiSchema.apiRoute == API_CONFIG.USER_ROUTE && id && req.currentUser.id != existItem.id) {
+      console.log("Sorry, You are not allowed to update item " + (id || existItem.id));
+      return false;
+    }
     console.log('=====currentUser id', req.currentUser.id, existItem[API_CONFIG.FIELD_USER_ID], apiSchema.schema.hasOwnProperty(API_CONFIG.FIELD_USER_ID), existItem);
 
     return true;
