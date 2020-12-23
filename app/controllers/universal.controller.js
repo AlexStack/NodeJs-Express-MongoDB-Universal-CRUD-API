@@ -696,30 +696,34 @@ const hasWritePermission = async (apiSchema, Universal, id, req, res) => {
     // if is update, check if all req.body fields are selfUpdateFields
     if (id && apiSchema.writeRules && apiSchema.writeRules.selfUpdateFields && apiSchema.writeRules.selfUpdateFields.length > 0) {
       let checkPoint = null; // not selfUpdateFields
+      let noOtherFields = true;
       const fields = apiSchema.writeRules.selfUpdateFields;
 
       for (const [pName, pValue] of Object.entries(req.body)) {
         if (fields.includes(pName)) {
           if (!existItem[pName]) {
-            if (parseInt(pValue) != 1 || parseInt(pValue) != 0) {
+            if (parseInt(pValue) != 1 && parseInt(pValue) != 0) {
               checkPoint = false;
-              break;
+              console.log('------selfUpdateFields checkPoint1', checkPoint)
+              return false;
             } else {
               checkPoint = true;
             }
           } else if (Math.abs(parseInt(existItem[pName]) - parseInt(pValue)) > 1) {
             checkPoint = false;
-            break;
+            console.log('------selfUpdateFields checkPoint2', checkPoint)
+            return false;
           } else {
             checkPoint = true;
           }
+        } else {
+          noOtherFields = false;
         }
       }
-      console.log('------selfUpdateFields checkPoint', checkPoint)
-      if (checkPoint) {
-        return true; // pass all check points
-      }
-      if (checkPoint === false) {
+      console.log('------selfUpdateFields checkPoint3', checkPoint)
+      if (noOtherFields && checkPoint) {
+        return true; // pass all check points and noOtherFields
+      } else if (checkPoint === false) {
         // only === false means has invalid selfUpdateFields, NOT ===null
         // even owner itself can not change selfUpdateFields with step>1
         return false;
