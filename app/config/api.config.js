@@ -112,7 +112,7 @@ module.exports.API_SCHEMAS = [
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name"],
         // "selectFields": "-email -firebaseUid",
-        "writeRules": { "ignoreCreateAuth": true }, // allow register without check auth
+        "writeRules": { "ignoreCreateAuth": true, "selfUpdateFields": ["viewNum", "likeNum", "commentNum"] }, // allow register without check auth
         "aggregatePipeline": [
             {
                 "$addFields":

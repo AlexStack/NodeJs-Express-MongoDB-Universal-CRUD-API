@@ -1,12 +1,13 @@
 const API_CONFIG = require("../config/api.config");
 const jwt = require('jsonwebtoken');
+const helper = require("../helper/commonHelper")
 
 module.exports = async (req, res, next) => {
     const apiRoute = req._parsedUrl.pathname.replace('/' + API_CONFIG.API_BASE, '');
     const apiSchema = API_CONFIG.API_SCHEMAS.find(item => item.apiRoute == apiRoute.split('/')[0]);
 
     let shouldPassAuth = false;
-    if ( API_CONFIG.ENABLE_AUTH ) {
+    if (API_CONFIG.ENABLE_AUTH) {
         if (apiRoute.indexOf('/getUserToken') != -1 || apiRoute.indexOf('/userLogin') != -1 || apiRoute.indexOf('/userRegister') != -1) {
             shouldPassAuth = true;
         }
@@ -25,13 +26,18 @@ module.exports = async (req, res, next) => {
             shouldPassAuth = true;
         }
 
+        // pass auth if all req.body are SelfUpdateFields
+        if (req.method == 'PUT' && helper.hasAllSelfUpdateFields(apiSchema, 'allSelfUpdateFieldsOnly', req, res)) {
+            shouldPassAuth = true;
+        }
+
         console.log('checkAuth apiRoute', apiRoute, req.method);
 
     } else {
         shouldPassAuth = true;
     }
-    
-    
+
+
     const { authorization } = req.headers;
     if (!shouldPassAuth && !authorization) {
         return res.status(401).send({
@@ -39,26 +45,26 @@ module.exports = async (req, res, next) => {
         })
     }
 
-    if ( authorization ){
+    if (authorization && authorization.indexOf('Bearer ') != -1 && authorization.length > 100) {
         // set req.currentUser even shouldPassAuth = true 
         jwt.verify(
-            authorization.replace('Bearer ', ''), 
-            API_CONFIG.JWT_SECRET, 
+            authorization.replace('Bearer ', ''),
+            API_CONFIG.JWT_SECRET,
             async (err, currentUser) => {
-            if ( err) {
-                if (shouldPassAuth){
-                    console.log('=====checkAuth err', err);
+                if (err) {
+                    if (shouldPassAuth) {
+                        console.log('=====checkAuth err', err);
+                    } else {
+                        return res.status(401).send({
+                            error: "Please login first! Wrong token"
+                        })
+                    }
                 } else {
-                    return res.status(401).send({
-                        error: "Please login first! Wrong token"
-                    })                    
+                    console.log('=====checkAuth currentUser', currentUser.id, currentUser.firstName, currentUser.role);
                 }
-            } else {
-                console.log('=====checkAuth currentUser', currentUser.id, currentUser.firstName, currentUser.role);
-            }
-            req.currentUser = currentUser;
-            next();
-        })  
+                req.currentUser = currentUser;
+                next();
+            })
     } else {
         next();
     }
