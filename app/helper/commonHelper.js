@@ -91,6 +91,7 @@ helper.hasWritePermission = async (apiSchema, Universal, id, req, res) => {
         if (req.method == 'PUT' && helper.hasAllSelfUpdateFields(apiSchema, 'allSelfUpdateFieldsOnly', req, res)) {
             //shouldPassAuth  but no req.currentUser
         } else {
+            console.log('-----currentUser no req.currentUser');
             return false;
         }
     }
