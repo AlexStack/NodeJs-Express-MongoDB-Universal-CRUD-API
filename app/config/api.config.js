@@ -141,12 +141,13 @@ module.exports.API_SCHEMAS = [
             viewNum: Number,
             likeNum: Number,
             commentNum: Number,
+            storyNum: Number,
             dob: Date,
             userId: String
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name", "content"],
-        "writeRules": { "selfUpdateFields": ["viewNum", "likeNum", "commentNum"] },
+        "writeRules": { "selfUpdateFields": ["viewNum", "likeNum", "commentNum", "storyNum"] },
         // "readRules": { "checkAuth": true, "checkOwner": false },
         "aggregatePipeline": [
             {

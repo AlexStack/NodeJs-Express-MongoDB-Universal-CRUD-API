@@ -56,6 +56,7 @@ helper.hasAllSelfUpdateFields = (apiSchema, existItem, req, res) => {
                 } else if (pValue == 'decrement') {
                     checkPoint = true;
                     pValue = parseInt(existItem[pName]) - 1;
+                    if (pValue < 0) { pValue = 0; }
                     req.body[pName] = pValue;
                     console.log('------selfUpdateFields checkPoint3', pValue)
                 } else if (Math.abs(parseInt(existItem[pName]) - parseInt(pValue)) > 1) {
