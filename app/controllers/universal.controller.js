@@ -563,7 +563,7 @@ exports.update = async (req, res) => {
   const hasPermission = await helper.hasWritePermission(apiSchema, Universal, id, req, res);
   if (!hasPermission) {
     res.status(401).send({
-      message: `No permission to update item with id=${id}. currentUser: ${req.currentUser?.id}`,
+      message: `No permission to update item with id=${id}. `,
     });
     return false;
   }
