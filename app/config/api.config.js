@@ -299,9 +299,8 @@ module.exports.API_SCHEMAS = [
             userId: String,
             appId: String // app unique id
         },
-        "mongooseOption": { timestamps: true, strict: false },
+        "mongooseOption": { timestamps: true, strict: true },
         "searchFields": ["type", "category"],
-        "writeRules": { "ignoreCreateAuth": true },
         "aggregatePipeline": [
             {
                 "$addFields":
