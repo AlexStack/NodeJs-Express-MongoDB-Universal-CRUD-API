@@ -301,6 +301,7 @@ module.exports.API_SCHEMAS = [
         },
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["type", "category"],
+        "writeRules": { "ignoreCreateAuth": true },
         "aggregatePipeline": [
             {
                 "$addFields":
