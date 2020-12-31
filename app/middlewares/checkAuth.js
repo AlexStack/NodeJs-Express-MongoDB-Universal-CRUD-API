@@ -1,6 +1,8 @@
-const API_CONFIG = require("../config/api.config");
+// const API_CONFIG = require("../config/api.config");
 const jwt = require('jsonwebtoken');
-const helper = require("../helper/commonHelper")
+const helper = require("../helper/commonHelper");
+
+const API_CONFIG = helper.getApiConfig();
 
 module.exports = async (req, res, next) => {
     const apiRoute = req._parsedUrl.pathname.replace('/' + API_CONFIG.API_BASE, '');

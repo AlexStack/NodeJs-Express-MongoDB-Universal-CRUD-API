@@ -1,6 +1,10 @@
-const API_CONFIG = require("../config/api.config");
+const helper = require("../helper/commonHelper");
+
+// const API_CONFIG = require("../config/api.config");
+const API_CONFIG = helper.getApiConfig();
+
 const mongoose = require("mongoose");
-mongoose.Promise = global.Promise; 
+mongoose.Promise = global.Promise;
 
 const db = {};
 db.mongoose = mongoose;

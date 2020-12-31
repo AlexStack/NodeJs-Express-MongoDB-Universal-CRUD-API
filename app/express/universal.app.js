@@ -5,21 +5,23 @@ const cors = require("cors");
 const resource = require("../routes/express-resource-alex");
 const app = express();
 const db = require("../models");
-const fs = require("fs");
+const helper = require("../helper/commonHelper")
 const checkAuth = require("../middlewares/checkAuth");
 
-// read config file from the app
-const configFilePaths = ['/config/meanapi.config.js', '/config/api.config.js', '/meanapi.config.js', '/api.config.js'];
-let apiConfigFile = '../config/api.config.js';
-const appRootDir = process.cwd();
-for (i = 0; i < 10; i++) {
-    if (fs.existsSync(appRootDir + configFilePaths[i])) {
-        apiConfigFile = appRootDir + configFilePaths[i];
-        break;
-    }
-}
-console.log('apiConfigFile=' + apiConfigFile);
-const API_CONFIG = require(apiConfigFile);
+// // read config file from the app
+// const configFilePaths = ['/config/meanapi.config.js', '/config/api.config.js', '/meanapi.config.js', '/api.config.js'];
+// let apiConfigFile = '../config/api.config.js';
+// const appRootDir = process.cwd();
+// for (i = 0; i < configFilePaths.length; i++) {
+//     if (fs.existsSync(appRootDir + configFilePaths[i])) {
+//         apiConfigFile = appRootDir + configFilePaths[i];
+//         break;
+//     }
+// }
+// console.log('apiConfigFile=' + apiConfigFile);
+// const API_CONFIG = require(apiConfigFile);
+
+const API_CONFIG = helper.getApiConfig();
 
 if (process.env.DEBUG == 'yes') {
     console.log('API_CONFIG:', API_CONFIG);

@@ -1,6 +1,26 @@
-const API_CONFIG = require("../config/api.config");
+const fs = require("fs");
+
+// const API_CONFIG = require("../config/api.config");
 
 let helper = {};
+
+helper.getApiConfig = () => {
+    // read config file from the app
+    const configFilePaths = ['/config/meanapi.config.js', '/config/api.config.js', '/meanapi.config.js', '/api.config.js'];
+    let apiConfigFile = '../config/api.config.js';
+    const appRootDir = process.cwd();
+    for (i = 0; i < configFilePaths.length; i++) {
+        if (fs.existsSync(appRootDir + configFilePaths[i])) {
+            apiConfigFile = appRootDir + configFilePaths[i];
+            break;
+        }
+    }
+    console.log('======= apiConfigFile=' + apiConfigFile + ' ->' + __filename);
+    const config = require(apiConfigFile);
+    return config;
+}
+
+const API_CONFIG = helper.getApiConfig();
 
 helper.getApiRoute = (req, res) => {
     // console.log('req.route.path',req.route.path);

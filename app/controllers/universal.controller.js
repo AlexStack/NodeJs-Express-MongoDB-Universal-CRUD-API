@@ -1,7 +1,9 @@
-const API_CONFIG = require("../config/api.config");
+// const API_CONFIG = require("../config/api.config");
 const db = require("../models");
 const jwt = require('jsonwebtoken');
 const helper = require("../helper/commonHelper")
+
+const API_CONFIG = helper.getApiConfig();
 
 // Create and Save a new Universal
 exports.store = async (req, res) => {
