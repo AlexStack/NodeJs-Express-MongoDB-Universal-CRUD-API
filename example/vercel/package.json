@@ -1,0 +1,6 @@
+{
+  "name": "universal-mean-api",
+  "dependencies": {
+    "universal-mean-api": "^0.9.2"
+  }
+}
