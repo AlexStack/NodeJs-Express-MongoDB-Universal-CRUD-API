@@ -2,7 +2,7 @@ const fs = require("fs");
 const isServerless = !!(process.env.LAMBDA_TASK_ROOT || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
 // try to load .env if not serverless
-const envFile = __dirname + '/../../.env';
+const envFile = process.cwd() + '/.env';
 if (!isServerless && fs.existsSync(envFile)) {
     const envResult = require('dotenv').config({ path: envFile });
     if (envResult.error) {

@@ -19,9 +19,9 @@
 var express = require("express"),
   methods = require("methods"),
   //   debug = require("debug")("express-resource"),
-  lingo = require("lingo"),
+  // lingo = require("lingo"),
   app = express.application,
-  en = lingo.en;
+// en = lingo.en;
 
 /**
  * Pre-defined action ordering.

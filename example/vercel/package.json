@@ -1,5 +1,7 @@
 {
   "name": "universal-mean-api",
+  "homepage": "https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API",
+  "license": "MIT",
   "dependencies": {
     "universal-mean-api": "^0.9.2"
   }

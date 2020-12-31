@@ -22,6 +22,20 @@ helper.getApiConfig = () => {
 
 const API_CONFIG = helper.getApiConfig();
 
+
+helper.parseEnvFile = (filePath) => {
+    // try to load .env if not serverless
+    const envFile = filePath ? filePath : process.cwd() + '/.env';
+    if (fs.existsSync(envFile)) {
+        const envResult = require('dotenv').config({ path: envFile });
+        if (envResult.error) {
+            throw envResult.error;
+        } else if (process.env.DEBUG == 'yes') {
+            console.log('envResult:', envResult.parsed);
+        }
+    }
+}
+
 helper.getApiRoute = (req, res) => {
     // console.log('req.route.path',req.route.path);
     // console.log(req._parsedUrl);  
