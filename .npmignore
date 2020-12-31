@@ -1,3 +1,4 @@
+# test .npmignore by run "npm pack" before run "npm publish"
 vendor
 node_modules
 node_lambda_layer

@@ -1,5 +1,6 @@
 # Serverless Universal MEAN API
 
+- This package allow you to set up a backend API using node.js & mongodb in 2 minutes
 - An Universal RESTful CRUD API for dynamic multiple collections of mongodb (database tables) with Node.js and Express.js, we DO NOT need to code the CRUD route/controller for each collection/table anymore.
 - Designed to run on Serverless environment, such as AWS Lambda, Azure, Google, NetLify, Vercel
 - Universal MEAN API stands for MongoDB(M) + Express.js(E) + Universal CRUD API(A) + Node.js(N)
@@ -13,9 +14,10 @@
 
 ## How to use
 
-- You need create 2 js files after install: server.js & meanapi.config.js
+- You only need create 2 js files after install: server.js & meanapi.config.js
 - Then run command: node server.js to see the result
-- Your app file structure example:
+- Done!
+- The file structure example:
 
 ```JavaScript
   /node_modules
