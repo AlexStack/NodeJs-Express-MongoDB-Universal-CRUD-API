@@ -1,0 +1,13 @@
+vendor
+node_modules
+node_lambda_layer
+.serverless
+.env
+reactAdmin
+azureFunctions
+netlifyFunctions
+vercel.*
+serverless.*
+*.zip
+*.tgz
+*.gz
