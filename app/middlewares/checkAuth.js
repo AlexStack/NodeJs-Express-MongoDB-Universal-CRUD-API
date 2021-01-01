@@ -33,7 +33,7 @@ module.exports = async (req, res, next) => {
             shouldPassAuth = true;
         }
 
-        console.log('checkAuth apiRoute', apiRoute, req.method);
+        console.log('checkAuth apiRoute', apiRoute, req.method, process.cwd());
 
     } else {
         shouldPassAuth = true;

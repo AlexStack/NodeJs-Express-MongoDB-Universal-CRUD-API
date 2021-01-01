@@ -18,17 +18,17 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "express-resource": "^1.0.0",
     "firebase-admin": "^9.4.2",
     "ini": "^2.0.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.10.8",
-    "serverless-http": "^2.6.0"
+    "mongoose": "^5.10.8"
+    
   },
   "engines": {
     "node": "12.x"
   },
   "devDependencies": {
+    "serverless-http": "^2.6.0",
     "nodemon": "^2.0.6"
   }
 }
