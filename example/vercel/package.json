@@ -3,6 +3,6 @@
   "homepage": "https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API",
   "license": "MIT",
   "dependencies": {
-    "universal-mean-api": "^0.9.2"
+    "universal-mean-api": "^0.9.4"
   }
 }

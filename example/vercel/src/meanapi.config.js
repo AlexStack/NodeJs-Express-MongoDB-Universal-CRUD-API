@@ -6,45 +6,44 @@ module.exports.IS_SERVERLESS = !!(process.env.LAMBDA_TASK_ROOT || process.env.AW
 
 module.exports.API_SCHEMAS = [
     {
-        "apiRoute": "test1",
-        "collectionName": "test1",
+        "apiRoute": "posts",
+        "collectionName": "posts",
         "schema": {
-            name: String,
-            description: String,
-            type: String,
-            gender: String,
-            dob: Date,
-            userId: { type: Number, required: [true, 'userId is required.'] }
+            title: String,
+            content: String,
+            category: String,
+            parentId: String
         },
         "mongooseOption": { timestamps: true, strict: false },
-        "searchFields": ["name", "description", "type"],
+        "searchFields": ["title", "content", "category"],
     },
     {
-        "apiRoute": "test2",
-        "collectionName": "test2",
+        "apiRoute": "comments",
+        "collectionName": "comments",
         "schema": {
             title: {
                 type: String,
                 required: [true, 'Title is required.']
             },
             description: String,
+            userId: { type: Number, required: [true, 'userId is required.'] }
+        },
+        "mongooseOption": { timestamps: true, strict: false },
+        "searchFields": ["description", "title"],
+    },
+    {
+        "apiRoute": "users",
+        "collectionName": "users",
+        "schema": {
+            name: String,
+            dob: Date,
             age: {
                 type: Number,
                 min: [18, 'Too young'],
                 max: 80
             }
         },
-        "mongooseOption": { timestamps: true, strict: true },
-        "searchFields": ["description", "title"],
-    },
-    {
-        "apiRoute": "test3",
-        "collectionName": "test3",
-        "schema": {
-            address: String,
-            description: String
-        },
         "mongooseOption": { timestamps: false, strict: false },
-        "searchFields": ["address"],
+        "searchFields": ["name"],
     }
 ];
