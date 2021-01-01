@@ -8,7 +8,7 @@
     ],
     "functions": {
         "api/vercel.js": {
-            "includeFiles": ""
+            "includeFiles": "config/**"
         }
     }
 }
