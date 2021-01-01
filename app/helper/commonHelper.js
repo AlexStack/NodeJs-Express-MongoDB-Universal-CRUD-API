@@ -8,11 +8,16 @@ helper.getApiConfig = () => {
     // read config file from the app
     const configFilePaths = ['/config/meanapi.config.js', '/config/api.config.js', '/meanapi.config.js', '/api.config.js'];
     let apiConfigFile = '../config/api.config.js';
-    const appRootDir = process.cwd();
-    for (i = 0; i < configFilePaths.length; i++) {
-        if (fs.existsSync(appRootDir + configFilePaths[i])) {
-            apiConfigFile = appRootDir + configFilePaths[i];
-            break;
+    if (process.env.API_CONFIG_FILE) {
+        // for serverless environment
+        apiConfigFile = process.env.API_CONFIG_FILE;
+    } else {
+        const appRootDir = process.cwd();
+        for (i = 0; i < configFilePaths.length; i++) {
+            if (fs.existsSync(appRootDir + configFilePaths[i])) {
+                apiConfigFile = appRootDir + configFilePaths[i];
+                break;
+            }
         }
     }
     console.log('======= apiConfigFile=' + apiConfigFile + ' ->' + __filename);

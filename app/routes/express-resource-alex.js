@@ -20,7 +20,7 @@ var express = require("express"),
   methods = require("methods"),
   //   debug = require("debug")("express-resource"),
   // lingo = require("lingo"),
-  app = express.application,
+  app = express.application;
 // en = lingo.en;
 
 /**
