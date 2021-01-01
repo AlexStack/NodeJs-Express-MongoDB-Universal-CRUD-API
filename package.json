@@ -1,6 +1,6 @@
 {
   "name": "universal-mean-api",
-  "version": "0.9.2",
+  "version": "0.9.4",
   "description": "This package allows you to set up a backend API using node.js & mongodb in 2 minutes. NodeJs-Express-MongoDB-Universal-CRUD-API(Universal MEAN API) for dynamic MongoDB tables, no need to repeat the CRUD API code for every table. Focus on run it in a serverless environment.",
   "homepage": "https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API",
   "author": "Alex Zeng",
@@ -21,14 +21,13 @@
     "firebase-admin": "^9.4.2",
     "ini": "^2.0.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.10.8"
-    
+    "mongoose": "^5.10.8",
+    "serverless-http": "^2.6.0"
   },
   "engines": {
     "node": "12.x"
   },
   "devDependencies": {
-    "serverless-http": "^2.6.0",
     "nodemon": "^2.0.6"
   }
 }

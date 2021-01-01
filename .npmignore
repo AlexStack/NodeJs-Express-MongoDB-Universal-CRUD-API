@@ -13,3 +13,5 @@ serverless.*
 *.zip
 *.tgz
 *.gz
+*bak.js
+*BAK.js
