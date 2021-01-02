@@ -200,36 +200,32 @@ DELETE http://localhost:8080/api/test1/<id>
 - cd reactAdmin
 - npm start
 
-## AWS Lambda settings
+## AWS Lambda example
 
-- Function js file: awsLambda.js
+- Demo: https://k2qt3w8a07.execute-api.ap-southeast-2.amazonaws.com/dev/api/posts
+- [AWS Lambda Code example is here](example/awsLambda)
+- Change the serverless.yml before deploy
+- You need remove - "node_modules/\*\*" from the exclude in serverless.yml if you want to deploy node_modules together
+- You can upload a nodejs layer instead of deploy node_modules every time
+- create_lambda_layer.sh can be used to create a node_modules layer
+- Change config/meanapi.config.js
+- Add DB environment via aws lambda UI
+- Done
 
 ## Serverless function settings for NetLify
 
-- Base directory: Empty(Not set)
-- Build command: npm install && cd reactAdmin && npm install && npm run build && rm -rf node_modules
-- Publish directory: reactAdmin/build
-- Functions directory: netlifyFunctions
-- Function js file: netlifyFunctions/serverlessapi.js
-- Environment variables
-  API_BASE: .netlify/functions/serverlessapi/
-  DB: mongodb+srv://db-user:db-pass@cluster0.tblrm.mongodb.net/db-name?retryWrites=true&w=majority
-  DEBUG: yes
-  REACT_APP_MEAN_API: https://meanapi.netlify.app/.netlify/functions/serverlessapi
-- Config react-admin for API demo or admin dashboard
-  - Setup env available: MEAN_API to https://meanapi.netlify.app/.netlify/functions/serverlessapi
-  - Change document root directory to reactAdmin/build
+- Demo: https://meanapi.netlify.app/
+- [NetLify serverless function Code example is here](example/netlify)
+- Change netlify/functions/meanapi/meanapi.config.js
+- Change the netlify.toml if need
+- According to some research, the Netlify Functions cannot access the Env Variables from netlify.toml. So, Please set up below environment variables from the Netlify website UI manually:
+  DB = "YOUR-MONGODB-URI"
+  API_BASE = ".netlify/functions/.netlify/functions/meanapi/"
+  API_CONFIG_FILE = "/var/task/src/functions/meanapi/meanapi.config.js"
 
-## Vercel
+## Serverless function settings for Vercel
 
-- Test many times for serverless function and failed
-- Use vercel.json install of serverless function
-- Demo: https://meanapi.now.sh/serverlessApi/pet
-- Environment variables
-  - API_BASE: serverlessApi/
-  - DB: mongodb+srv://db-user:db-pass@cluster0.tblrm.mongodb.net/db-name?retryWrites=true&w=majority
-  - DEBUG: yes
-  - CORS_ORIGIN: https://reactadmindemo.now.sh
-- Set up react-admin with another app use different domain name
-  - REACT_APP_MEAN_API: https://meanapi.now.sh/serverlessApi
-  - Demo: https://reactadmindemo.now.sh/
+- Demo: https://meanapi.vercel.app/
+- [Vercel function Code example is here](example/Vercel)
+- Change config/meanapi.config.js
+- Change the vercel.json if need

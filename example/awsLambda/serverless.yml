@@ -1,0 +1,31 @@
+service: Universal-MEAN-API
+frameworkVersion: "2"
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: ap-southeast-2
+  environment:
+    DB: "mongodb-uri"
+
+# packaging information here
+package:
+  exclude:
+    - "node_modules/**"
+    - "node_lambda_layer/**"
+    - ".git/**"
+    - "vendor/**"
+    - ".serverless"
+    - ".env"
+    - "reactAdmin/**"
+    - "*.sh"
+
+# function information here, you can change the function name MeanApiExample
+functions:
+  MeanApiExample:
+    handler: awsLambda.lambdaHandler
+    memorySize: 128
+    description: Mean-Api-aws-example
+    events:
+      - http: "ANY /"
+      - http: "ANY /{proxy+}"

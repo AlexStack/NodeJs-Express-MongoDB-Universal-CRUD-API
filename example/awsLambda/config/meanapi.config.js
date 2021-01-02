@@ -1,16 +1,3 @@
-const fs = require("fs");
-const isServerless = !!(process.env.LAMBDA_TASK_ROOT || process.env.AWS_LAMBDA_FUNCTION_NAME);
-
-const envFile = process.cwd() + '/.env';
-if (!isServerless && fs.existsSync(envFile)) {
-    const envResult = require('dotenv').config({ path: envFile });
-    if (envResult.error) {
-        throw envResult.error;
-    } else if (process.env.DEBUG == 'yes') {
-        console.log('envResult:', envResult.parsed);
-    }
-}
-
 module.exports.DB = process.env.DB || 'please-set-database-connect-uri-first';
 module.exports.API_BASE = process.env.API_BASE || 'api/';
 module.exports.PORT = process.env.PORT || '8080';
