@@ -226,6 +226,6 @@ DELETE http://localhost:8080/api/test1/<id>
 ## Serverless function settings for Vercel
 
 - Demo: https://meanapi.vercel.app/
-- [Vercel function Code example is here](https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API/tree/master/example/Vercel)
+- [Vercel function Code example is here](https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API/tree/master/example/vercel)
 - Change config/meanapi.config.js
 - Change the vercel.json if need
