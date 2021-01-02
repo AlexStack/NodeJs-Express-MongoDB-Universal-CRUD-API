@@ -203,7 +203,7 @@ DELETE http://localhost:8080/api/test1/<id>
 ## AWS Lambda example
 
 - Demo: https://k2qt3w8a07.execute-api.ap-southeast-2.amazonaws.com/dev/api/posts
-- [AWS Lambda Code example is here](example/awsLambda)
+- [AWS Lambda Code example is here](https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API/tree/master/example/awsLambda)
 - Change the serverless.yml before deploy
 - You need remove - "node_modules/\*\*" from the exclude in serverless.yml if you want to deploy node_modules together
 - You can upload a nodejs layer instead of deploy node_modules every time
@@ -215,7 +215,7 @@ DELETE http://localhost:8080/api/test1/<id>
 ## Serverless function settings for NetLify
 
 - Demo: https://meanapi.netlify.app/
-- [NetLify serverless function Code example is here](example/netlify)
+- [NetLify serverless function Code example is here](https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API/tree/master/example/netlify)
 - Change netlify/functions/meanapi/meanapi.config.js
 - Change the netlify.toml if need
 - According to some research, the Netlify Functions cannot access the Env Variables from netlify.toml. So, Please set up below environment variables from the Netlify website UI manually:
@@ -226,6 +226,6 @@ DELETE http://localhost:8080/api/test1/<id>
 ## Serverless function settings for Vercel
 
 - Demo: https://meanapi.vercel.app/
-- [Vercel function Code example is here](example/Vercel)
+- [Vercel function Code example is here](https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API/tree/master/example/Vercel)
 - Change config/meanapi.config.js
 - Change the vercel.json if need

@@ -6,3 +6,4 @@ node_lambda_layer
 *.tgz
 *.gz
 *.zip
+*.git*

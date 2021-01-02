@@ -1,0 +1,14 @@
+[build]
+  functions = "functions"
+
+[context.production]
+  publish = "public/"
+  environment = { API_BASE = ".netlify/functions/meanapi/", API_CONFIG_FILE = "/var/task/src/functions/meanapi/meanapi.config.js" }
+
+[context.deploy-preview]
+  publish = "public/"
+  environment = { API_BASE = ".netlify/functions/meanapi/", API_CONFIG_FILE = "/var/task/src/functions/meanapi/meanapi.config.js" }
+
+[context.branch-deploy]
+  publish = "public/"
+  environment = { API_BASE = ".netlify/functions/meanapi/", API_CONFIG_FILE = "/var/task/src/functions/meanapi/meanapi.config.js" }
