@@ -12,7 +12,37 @@
 
 - npm install universal-mean-api
 
-## How to use
+## AWS Lambda example
+
+- Demo: https://k2qt3w8a07.execute-api.ap-southeast-2.amazonaws.com/dev/api/posts
+- [AWS Lambda Code example is here](https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API/tree/master/example/awsLambda)
+- Change the serverless.yml before deploy
+- You need remove - "node_modules/\*\*" from the exclude in serverless.yml if you want to deploy node_modules together
+- You can upload a nodejs layer instead of deploy node_modules every time
+- create_lambda_layer.sh can be used to create a node_modules layer
+- Change config/meanapi.config.js
+- Add DB environment via aws lambda UI
+- Done
+
+## Serverless function example for NetLify
+
+- Demo: https://meanapi.netlify.app/
+- [NetLify serverless function Code example is here](https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API/tree/master/example/netlify)
+- Change netlify/functions/meanapi/meanapi.config.js
+- Change the netlify.toml if need
+- According to some research, the Netlify Functions cannot access the Env Variables from netlify.toml. So, Please set up below environment variables from the Netlify website UI manually:
+  DB = "YOUR-MONGODB-URI"
+  API_BASE = ".netlify/functions/.netlify/functions/meanapi/"
+  API_CONFIG_FILE = "/var/task/src/functions/meanapi/meanapi.config.js"
+
+## Serverless function example for Vercel
+
+- Demo: https://meanapi.vercel.app/
+- [Vercel function Code example is here](https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API/tree/master/example/vercel)
+- Change config/meanapi.config.js
+- Change the vercel.json if need
+
+## How to use locally
 
 - You only need create 2 js files after install: server.js & meanapi.config.js
 - Then run command: node server.js to see the result
@@ -200,32 +230,37 @@ DELETE http://localhost:8080/api/test1/<id>
 - cd reactAdmin
 - npm start
 
-## AWS Lambda example
+## Example of adding a custom route to server.js?
 
-- Demo: https://k2qt3w8a07.execute-api.ap-southeast-2.amazonaws.com/dev/api/posts
-- [AWS Lambda Code example is here](https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API/tree/master/example/awsLambda)
-- Change the serverless.yml before deploy
-- You need remove - "node_modules/\*\*" from the exclude in serverless.yml if you want to deploy node_modules together
-- You can upload a nodejs layer instead of deploy node_modules every time
-- create_lambda_layer.sh can be used to create a node_modules layer
-- Change config/meanapi.config.js
-- Add DB environment via aws lambda UI
-- Done
+- Below example is add a custom /api/sitemap route to server.js
+- It read data from collection posts and output a text format sitemap for google
 
-## Serverless function settings for NetLify
+```javascript
+const { app, API_CONFIG, db } = require("universal-mean-api");
 
-- Demo: https://meanapi.netlify.app/
-- [NetLify serverless function Code example is here](https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API/tree/master/example/netlify)
-- Change netlify/functions/meanapi/meanapi.config.js
-- Change the netlify.toml if need
-- According to some research, the Netlify Functions cannot access the Env Variables from netlify.toml. So, Please set up below environment variables from the Netlify website UI manually:
-  DB = "YOUR-MONGODB-URI"
-  API_BASE = ".netlify/functions/.netlify/functions/meanapi/"
-  API_CONFIG_FILE = "/var/task/src/functions/meanapi/meanapi.config.js"
+// custom route start
+app.get("/" + API_CONFIG.API_BASE + "sitemap", async (req, res, next) => {
+  const urls = await db["posts"]
+    .find()
+    .sort({ _id: -1 })
+    .limit(100)
+    .then((data) => {
+      let urls = [];
+      data.map((item) => {
+        urls.push("https://your-website.com/posts/" + item.id);
+      });
+      return urls;
+    });
+  res.send(urls.join("\n"));
+});
+// custom route end
 
-## Serverless function settings for Vercel
+app.set("test1111", "/" + API_CONFIG.API_BASE + "sitemap");
 
-- Demo: https://meanapi.vercel.app/
-- [Vercel function Code example is here](https://github.com/AlexStack/NodeJs-Express-MongoDB-Universal-CRUD-API/tree/master/example/vercel)
-- Change config/meanapi.config.js
-- Change the vercel.json if need
+app.listen(API_CONFIG.PORT, () => {
+  console.log(
+    `Server is running on port ${API_CONFIG.PORT}. process.cwd()=` +
+      process.cwd()
+  );
+});
+```

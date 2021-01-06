@@ -99,9 +99,9 @@ if (API_CONFIG.ENABLE_AUTH && API_CONFIG.USER_ROUTE) {
 API_CONFIG.API_SCHEMAS.forEach(apiSchema => {
     // universal = require("../controllers/universal.controller");
     app.resource(API_CONFIG.API_BASE + apiSchema.apiRoute, universal);
-    app.get("/" + API_CONFIG.API_BASE + apiSchema.apiRoute + "/search/:keyword", (req, res, next) => {
-        universal.search(req, res);
-    });
+    // app.get("/" + API_CONFIG.API_BASE + apiSchema.apiRoute + "/search/:keyword", (req, res, next) => {
+    //     universal.search(req, res);
+    // });
 });
 
 
@@ -112,4 +112,4 @@ module.exports.db = db;
 module.exports.app = app;
 module.exports.serverless = serverless;
 module.exports.API_CONFIG = API_CONFIG;
-
+module.exports.helper = helper;
