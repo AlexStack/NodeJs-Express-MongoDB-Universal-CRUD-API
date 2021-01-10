@@ -612,7 +612,7 @@ exports.destroy = async (req, res) => {
 
   const hasPermission = await helper.hasWritePermission(apiSchema, Universal, id, req, res);
   if (!hasPermission) {
-    res.status(404).send({
+    res.status(401).send({
       message: `No permission to DELETE item with id=${id}. currentUser: ${req.currentUser.id}`,
     });
     return false;

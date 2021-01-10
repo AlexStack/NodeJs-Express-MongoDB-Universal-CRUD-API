@@ -23,7 +23,7 @@ helper.getApiConfig = () => {
     console.log('======= apiConfigFile=' + apiConfigFile + ' ->' + __filename);
     const config = require(apiConfigFile);
     return config;
-}
+};
 
 const API_CONFIG = helper.getApiConfig();
 
@@ -39,7 +39,7 @@ helper.parseEnvFile = (filePath) => {
             console.log('envResult:', envResult.parsed);
         }
     }
-}
+};
 
 helper.getApiRoute = (req, res) => {
     // console.log('req.route.path',req.route.path);
@@ -51,16 +51,16 @@ helper.getApiRoute = (req, res) => {
         return apiRoute.split('/')[0];
     }
     return apiRoute;
-}
+};
 helper.getUniversalDb = (db, req, res) => {
     // get dynamic dbModel via api router
     return db[helper.getApiRoute(req, res)];
-}
+};
 
 helper.getApiSchema = (req, res) => {
     const apiRoute = helper.getApiRoute(req, res);
     return API_CONFIG.API_SCHEMAS.find(apiSchema => apiSchema.apiRoute == apiRoute);
-}
+};
 
 
 
@@ -82,7 +82,7 @@ helper.hasAllSelfUpdateFields = (apiSchema, existItem, req, res) => {
                     if (pValue == 'increment') { pValue = 1; req.body[pName] = pValue; }
                     if (parseInt(pValue) != 1 && parseInt(pValue) != 0) {
                         checkPoint = false;
-                        console.log('------selfUpdateFields checkPoint1', checkPoint)
+                        console.log('------selfUpdateFields checkPoint1', checkPoint);
                         return false;
                     } else {
                         checkPoint = true;
@@ -91,16 +91,16 @@ helper.hasAllSelfUpdateFields = (apiSchema, existItem, req, res) => {
                     checkPoint = true;
                     pValue = parseInt(existItem[pName]) + 1;
                     req.body[pName] = pValue;
-                    console.log('------selfUpdateFields checkPoint2 pValue=', pValue)
+                    console.log('------selfUpdateFields checkPoint2 pValue=', pValue);
                 } else if (pValue == 'decrement') {
                     checkPoint = true;
                     pValue = parseInt(existItem[pName]) - 1;
                     if (pValue < 0) { pValue = 0; }
                     req.body[pName] = pValue;
-                    console.log('------selfUpdateFields checkPoint3', pValue)
+                    console.log('------selfUpdateFields checkPoint3', pValue);
                 } else if (Math.abs(parseInt(existItem[pName]) - parseInt(pValue)) > 1) {
                     checkPoint = false;
-                    console.log('------selfUpdateFields checkPoint4', checkPoint)
+                    console.log('------selfUpdateFields checkPoint4', checkPoint);
                     return false;
                 } else {
                     checkPoint = true;
@@ -109,7 +109,7 @@ helper.hasAllSelfUpdateFields = (apiSchema, existItem, req, res) => {
                 noOtherFields = false;
             }
         }
-        console.log('------selfUpdateFields checkPoint5', checkPoint)
+        console.log('------selfUpdateFields checkPoint5', checkPoint);
         if (noOtherFields && checkPoint) {
             return true; // pass all check points and noOtherFields
         } else if (checkPoint === false) {
@@ -119,7 +119,7 @@ helper.hasAllSelfUpdateFields = (apiSchema, existItem, req, res) => {
         }
     }
     return false;
-}
+};
 
 
 
@@ -222,7 +222,7 @@ helper.hasWritePermission = async (apiSchema, Universal, id, req, res) => {
         return true;
     }
 
-}
+};
 
 
 
@@ -259,7 +259,7 @@ helper.hasReadPermission = (apiSchema, Universal, existItem, req, res) => {
         hasPermission = true;
     }
     return hasPermission;
-}
+};
 
 helper.hasPrivateConstraint = (apiSchema, existItem, req, res) => {
     // check if the schema has isPublic field
@@ -288,6 +288,7 @@ helper.hasPrivateConstraint = (apiSchema, existItem, req, res) => {
 helper.decodeFirebaseIdToken = async (firebaseIdToken) => {
     const firebaseAdmin = require("firebase-admin");
     if (!firebaseIdToken || firebaseIdToken.length < 250 || !API_CONFIG.FIREBASE_DB_URL || !API_CONFIG.FIREBASE_SDK_KEY || !API_CONFIG.FIREBASE_SDK_KEY.hasOwnProperty('private_key')) {
+        console.log('Wrong firebaseIdToken length or wrong API_CONFIG.FIREBASE_SDK_KEY');
         return false;
     }
     // !admin.apps.length ? admin.initializeApp() : admin.app();
@@ -321,7 +322,7 @@ helper.decodeFirebaseIdToken = async (firebaseIdToken) => {
         return false;
     }
 
-}
+};
 
 
 
@@ -335,7 +336,7 @@ helper.getTableId = (tableName) => {
         tableId = tableName.slice(0, -1) + 'Id';
     }
     return tableId;
-}
+};
 
 helper.getPluralName = (tableName) => {
     let pluralName = tableName + 's';
@@ -351,7 +352,7 @@ helper.getPluralName = (tableName) => {
         pluralName = tableName.slice(0, -2) + 'ves';
     }
     return pluralName;
-}
+};
 
 helper.getChildrenLookupOperator = (id, tableName, apiSchema, embedSchema, foreignId, hasPrivate) => {
     const foreignField = foreignId ? foreignId : helper.getTableId(apiSchema.collectionName);
@@ -377,11 +378,11 @@ helper.getChildrenLookupOperator = (id, tableName, apiSchema, embedSchema, forei
             'as': tableName,
             'pipeline': pipeline
         }
-    }
+    };
     //BUG: users table(users?id=5fdbf8dc098f0a77130d4123&_embed=pets,stories,comments|ownerId)  not working, but other tables works
     console.log('lookupOperator pipeline.match', match);
     return lookupOperator;
-}
+};
 
 helper.getParentLookupOperator = (foreignField, singularTableName, pluralTableName, expandSchema) => {
     let pipeline = expandSchema.aggregatePipeline ? expandSchema.aggregatePipeline : [];
@@ -418,9 +419,9 @@ helper.getParentLookupOperator = (foreignField, singularTableName, pluralTableNa
             'as': singularTableName,
             'pipeline': pipeline
         }
-    }
+    };
     // console.log('getParentLookupOperator pipeline', pipeline);
     return lookupOperator;
-}
+};
 
 module.exports = helper;
