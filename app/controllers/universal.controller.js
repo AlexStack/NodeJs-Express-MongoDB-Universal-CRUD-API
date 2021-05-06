@@ -21,15 +21,15 @@ exports.store = async (req, res) => {
     }
   }
 
-  // handle user register
+  // handle user register with password
   if (apiSchema.apiRoute == API_CONFIG.USER_ROUTE && req.body.password) {
-    if (req.body.email.indexOf('@') != -1) {
+    if (req.body.email && req.body.email.indexOf('@') != -1) {
       userData = await Universal.findOne({ email: req.body.email }).exec();
       if (userData) {
         return res.status(401).json({ error: "The email already exists" });
       }
     }
-    if (req.body.username.length > 2) {
+    if (req.body.username && req.body.username.length > 2) {
       userData = await Universal.findOne({ username: req.body.username }).exec();
       if (userData) {
         return res.status(401).json({ error: "The username already exists" });
@@ -591,21 +591,20 @@ exports.update = async (req, res) => {
 
   // handle user update
   if (apiSchema.apiRoute == API_CONFIG.USER_ROUTE) {
-    userData = await Universal.findById(id).exec();
-    if (!userData) {
-      return res.status(401).json({ error: "No such user" });
-    }
-    if (req.body.email.indexOf('@') != -1) {
+
+    if (req.body.email && req.body.email.indexOf('@') != -1) {
+      userData = await Universal.find({ email: req.body.email }).exec();
       if (userData && userData.email && userData.email != req.body.email) {
         return res.status(401).json({ error: "The email already exists" });
       }
     }
-    if (req.body.username.length > 2) {
+    if (req.body.username && req.body.username.length > 2) {
+      userData = await Universal.find({ username: req.body.username }).exec();
       if (userData && userData.username && userData.username != req.body.username) {
         return res.status(401).json({ error: "The username already exists" });
       }
     }
-    if (req.body.username.length > 2) {
+    if (req.body.password && req.body.password.length > 2) {
       // encrypt password
       req.body.password = bcrypt.hashSync(req.body.password, 10);
     }
