@@ -95,7 +95,7 @@ module.exports.API_SCHEMAS = [
             password: {
                 type: String,
                 required: true,
-                select: false,
+                select: true,
             },
             confirmPassword: {
                 type: String,
@@ -120,7 +120,7 @@ module.exports.API_SCHEMAS = [
             },
             {
                 "$project":
-                    { password: 0, confirmPassword: 0, email: 0, "pets2.createdAt": 0, __v: 0, _id: 0, firebaseUid: 0, accessToken: 0 }
+                    { password: 0, confirmPassword: 0, email2: 0, "pets2.createdAt": 0, __v: 0, _id: 0, firebaseUid: 0, accessToken: 0 }
             }
         ]
     },
@@ -320,19 +320,48 @@ module.exports.API_SCHEMAS = [
         "apiRoute": "orders",
         "collectionName": "orders",
         "schema": {
-            name: String,
-            content: String,
+            userId: String,
+            productName: String,
             productId: String,
-            status: String,
-            category: String,
-            storyId: String,
-            petId: String,
-            userId: String
+            productPrice: Number,
+            orderAmount: Number,
+            orderStatus: String,
+            paymentStatus: String,
+            name: String,
+            contact: String,
+            note: String,
         },
         "mongooseOption": { timestamps: true, strict: false },
-        "searchFields": ["name", "content"],
+        "searchFields": ["name", "note", "contact", "productTitle"],
         "writeRules": { "checkOwner": true },
-        "readRules": { "checkAuth": true, "checkOwner": true },
+        "readRules": { "checkAuth": false, "checkOwner": true },
+        "aggregatePipeline": [
+            {
+                "$addFields":
+                    { id: "$_id" }
+            },
+            {
+                "$project":
+                    { __v: 0, _id: 0 }
+            }
+        ]
+    },
+    /**
+     * "collectionName": "favorites"
+     * Test readRules, only owner itself can view/edit
+     */
+    {
+        "apiRoute": "favorites",
+        "collectionName": "favorites",
+        "schema": {
+            userId: String,
+            productId: String,
+            rate: Number,
+        },
+        "mongooseOption": { timestamps: true, strict: false },
+        "searchFields": ["userId", "productId"],
+        "writeRules": { "checkOwner": false },
+        "readRules": { "checkAuth": false, "checkOwner": true },
         "aggregatePipeline": [
             {
                 "$addFields":
@@ -356,6 +385,7 @@ module.exports.USER_ROUTE = 'users';
 module.exports.FIELD_USER_ID = 'userId';
 module.exports.FIELD_PUBLIC = 'isPublic';
 module.exports.FIELD_TARGET_USER_ID = 'ownerId';
+module.exports.FIELD_PASSWORD = 'password';
 
 module.exports.FIREBASE_DB_URL = 'https://pet-story-react.firebaseio.com';
 

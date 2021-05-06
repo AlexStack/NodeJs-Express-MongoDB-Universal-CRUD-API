@@ -1,8 +1,8 @@
 // const API_CONFIG = require("../config/api.config");
 const db = require("../models");
 const jwt = require('jsonwebtoken');
-const helper = require("../helper/commonHelper")
-
+const bcrypt = require('bcrypt');
+const helper = require("../helper/commonHelper");
 const API_CONFIG = helper.getApiConfig();
 
 // Create and Save a new Universal
@@ -19,6 +19,24 @@ exports.store = async (req, res) => {
       });
       return false;
     }
+  }
+
+  // handle user register
+  if (apiSchema.apiRoute == API_CONFIG.USER_ROUTE && req.body.password) {
+    if (req.body.email.indexOf('@') != -1) {
+      userData = await Universal.findOne({ email: req.body.email }).exec();
+      if (userData) {
+        return res.status(401).json({ error: "The email already exists" });
+      }
+    }
+    if (req.body.username.length > 2) {
+      userData = await Universal.findOne({ username: req.body.username }).exec();
+      if (userData) {
+        return res.status(401).json({ error: "The username already exists" });
+      }
+    }
+    // encrypt password
+    req.body.password = bcrypt.hashSync(req.body.password, 10);
   }
 
   const universal = new Universal(req.body);
@@ -257,7 +275,7 @@ exports.index = async (req, res) => {
       if (db.mongoose.isValidObjectId(idStr)) {
         objIdAry.push(db.mongoose.Types.ObjectId(idStr));
       }
-    })
+    });
     condition["_id"] = { "$in": objIdAry };
   }
 
@@ -332,16 +350,16 @@ exports.index = async (req, res) => {
         if (hasPermission) {
           const hasPrivate = helper.hasPrivateConstraint(embedSchema, condition, req, res);
 
-          console.log('tableName embedSchema hasPrivate', hasPrivate)
+          console.log('tableName embedSchema hasPrivate', hasPrivate);
           pipelineOperators.push(helper.getChildrenLookupOperator(null, pluralTableName, apiSchema, embedSchema, foreignField, hasPrivate));
         } else {
           console.log('No read permission for embedSchema ', embedSchema.apiRoute);
         }
 
       } else {
-        console.log('tableName schema not defined', tableName)
+        console.log('tableName schema not defined', tableName);
       }
-    })
+    });
     // console.log('pipelineOperators after req.query._embed', pipelineOperators);
 
   }
@@ -357,18 +375,18 @@ exports.index = async (req, res) => {
       if (expandSchema) {
         const hasPermission = helper.hasReadPermission(expandSchema, Universal, req.body, req, res);
         if (hasPermission) {
-          console.log('tableName expandSchema', expandSchema.apiRoute)
+          console.log('tableName expandSchema', expandSchema.apiRoute);
           pipelineOperators.push(helper.getParentLookupOperator(foreignField, singularTableName, pluralTableName, expandSchema));
 
           pipelineOperators.push({ $unwind: { path: "$" + singularTableName, "preserveNullAndEmptyArrays": true } });
         } else {
-          console.log('No read permission for expandSchema ', expandSchema.apiRoute)
+          console.log('No read permission for expandSchema ', expandSchema.apiRoute);
         }
 
       } else {
-        console.log('tableName schema not defined', singularTableName, pluralTableName)
+        console.log('tableName schema not defined', singularTableName, pluralTableName);
       }
-    })
+    });
     // console.log('pipelineOperators after req.query._expand', pipelineOperators);
   }
 
@@ -379,14 +397,14 @@ exports.index = async (req, res) => {
 
   // combine pre-defined pipeline from api.config.js
   if (apiSchema.aggregatePipeline) {
-    pipelineOperators = [...pipelineOperators, ...apiSchema.aggregatePipeline]
+    pipelineOperators = [...pipelineOperators, ...apiSchema.aggregatePipeline];
   }
 
   // console.log('===exports.show pipelineOperators', pipelineOperators);
 
   const aggregateData = Universal.aggregate(pipelineOperators).exec((err, data) => {
     if (err) {
-      return console.log('aggregate error', err)
+      return console.log('aggregate error', err);
     }
     // if (req.query?._responseType == 'returnData') {
     //   console.log('aggregate data', data)
@@ -494,10 +512,10 @@ exports.show = async (req, res) => {
           console.log('No read permission for embed schema ' + embedSchema.apiRoute + '');
         }
       } else {
-        console.log('tableName schema not defined', tableName)
+        console.log('tableName schema not defined', tableName);
       }
 
-    })
+    });
   }
 
   // To include parent resource, add _expand
@@ -522,13 +540,13 @@ exports.show = async (req, res) => {
         }
 
       } else {
-        console.log('tableName schema not defined', singularTableName, pluralTableName)
+        console.log('tableName schema not defined', singularTableName, pluralTableName);
       }
 
-    })
+    });
   }
   if (apiSchema.aggregatePipeline) {
-    pipelineOperators = [...pipelineOperators, ...apiSchema.aggregatePipeline]
+    pipelineOperators = [...pipelineOperators, ...apiSchema.aggregatePipeline];
   }
 
 
@@ -536,7 +554,7 @@ exports.show = async (req, res) => {
 
   let query = await Universal.aggregate(pipelineOperators).exec((err, data) => {
     if (err) {
-      return console.log('aggregate error', err)
+      return console.log('aggregate error', err);
     }
     // console.log('aggregate data', data)
     if (!data || data.length == 0)
@@ -570,6 +588,28 @@ exports.update = async (req, res) => {
     return false;
   }
   // console.log('update req.body', req.body)
+
+  // handle user update
+  if (apiSchema.apiRoute == API_CONFIG.USER_ROUTE) {
+    userData = await Universal.findById(id).exec();
+    if (!userData) {
+      return res.status(401).json({ error: "No such user" });
+    }
+    if (req.body.email.indexOf('@') != -1) {
+      if (userData && userData.email && userData.email != req.body.email) {
+        return res.status(401).json({ error: "The email already exists" });
+      }
+    }
+    if (req.body.username.length > 2) {
+      if (userData && userData.username && userData.username != req.body.username) {
+        return res.status(401).json({ error: "The username already exists" });
+      }
+    }
+    if (req.body.username.length > 2) {
+      // encrypt password
+      req.body.password = bcrypt.hashSync(req.body.password, 10);
+    }
+  }
 
   // TODO: if id not exist, create a new item -- for PUT method
   Universal.findByIdAndUpdate(id, req.body, {
@@ -669,15 +709,17 @@ exports.search = (req, res) => {
 // user token, todo: security
 exports.getUserToken = async (req, res) => {
 
-  if (!req.body.firebaseIdToken && !req.body.awsIdToken) {
-    console.log('getUserToken req.body', req.body, req.body)
+  if (!req.body.firebaseIdToken && !req.body.awsIdToken && !req.body.password) {
+    console.log('getUserToken req.body', req.body, req.body);
     return res.status(400).json({ error: "Missing params for getUserToken" });
   }
 
   let findCondition = {};
+  let userData = null;
+  const Universal = helper.getUniversalDb(db, req, res);
 
   if (req.body.firebaseIdToken) {
-
+    // use cloud firebase login & return access jwt token
     const decodedToken = await helper.decodeFirebaseIdToken(req.body.firebaseIdToken);
     console.log('decodedToken decodedToken ', decodedToken);
     if (!decodedToken) {
@@ -687,9 +729,30 @@ exports.getUserToken = async (req, res) => {
       return res.status(401).json({ error: "firebaseUid not match firebaseIdToken" });
     }
     findCondition.firebaseUid = decodedToken.uid;
+    userData = await Universal.findOne(findCondition).exec();
+
+  } else if (req.body.password && (req.body.email || req.body.username)) {
+    // use email/username and password login & return access jwt token
+    if (req.body.email.indexOf('@') != -1) {
+      findCondition.email = req.body.email;
+    } else if (req.body.username.length > 2) {
+      findCondition.username = req.body.username;
+    }
+    userData = await Universal.findOne(findCondition).exec();
+    console.log('password userData', userData);
+    if (userData) {
+      const passwordIsValid = bcrypt.compareSync(
+        req.body.password,
+        userData.password
+      );
+
+      if (!passwordIsValid) {
+        return res.status(400).json({ error: "Wrong password " });
+      }
+    }
+
   }
 
-  const Universal = helper.getUniversalDb(db, req, res);
 
   // if (!req.body.email) {
   //   return res.status(400).json({ error: "no email" });
@@ -699,19 +762,18 @@ exports.getUserToken = async (req, res) => {
   // const returnData = this.index(req, res);
 
 
-
-  const userData = await Universal.findOne(findCondition).exec();
   console.log('_responseType userData', userData);
   if (!userData) {
     console.log('No such user findCondition', findCondition);
     return res.status(401).json({ error: "No such user" });
   }
-
+  // userProfile needs to be flexible, no hard code fields
   let userProfile = {
     id: userData._id ? userData._id : userData.id,
     email: userData.email,
     firstName: userData.firstName,
     lastName: userData.lastName,
+    username: userData.username,
     role: userData.role,
   };
   console.log('_responseType userProfile', userData['firstName']);
@@ -725,4 +787,4 @@ exports.getUserToken = async (req, res) => {
   res.send(userProfile);
   // res.set("x-total-count", data.length);
   // res.send(data);
-}
+};
