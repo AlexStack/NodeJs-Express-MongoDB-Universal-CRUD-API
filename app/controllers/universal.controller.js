@@ -732,9 +732,9 @@ exports.getUserToken = async (req, res) => {
 
   } else if (req.body.password && (req.body.email || req.body.username)) {
     // use email/username and password login & return access jwt token
-    if (req.body.email.indexOf('@') != -1) {
+    if (req.body.email && req.body.email.indexOf('@') != -1) {
       findCondition.email = req.body.email;
-    } else if (req.body.username.length > 2) {
+    } else if (req.body.username && req.body.username.length > 2) {
       findCondition.username = req.body.username;
     }
     userData = await Universal.findOne(findCondition).exec();

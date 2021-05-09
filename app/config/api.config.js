@@ -334,7 +334,7 @@ module.exports.API_SCHEMAS = [
         "mongooseOption": { timestamps: true, strict: false },
         "searchFields": ["name", "note", "contact", "productTitle"],
         "writeRules": { "checkOwner": true },
-        "readRules": { "checkAuth": false, "checkOwner": true },
+        "readRules": { "checkAuth": true, "checkOwner": true },
         "aggregatePipeline": [
             {
                 "$addFields":
