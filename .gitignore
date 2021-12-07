@@ -7,3 +7,6 @@ node_lambda_layer
 *.gz
 *.zip
 *.git*
+
+package-lock.json
+package-lock.bak.json
